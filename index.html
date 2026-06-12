@@ -192,6 +192,7 @@
     <div class="foot-btns">
       <button class="reset" id="exportBtn">백업 내보내기</button>
       <button class="reset" id="importBtn">복원</button>
+      <button class="reset" id="restoreDelBtn" hidden>삭제 복원</button>
       <button class="reset" id="resetBtn">체크 전체 해제</button>
     </div>
     <input type="file" id="importFile" accept="application/json" hidden>
@@ -281,13 +282,13 @@ const DATA = [
 ];
 
 const CAT_LIST = DATA.map(d=>d.cat);
-let state = { checked:{}, custom:[], filter:"all" };
+let state = { checked:{}, custom:[], deleted:[], filter:"all" };
 
 // ---------- storage (localStorage: 폰·브라우저에 그대로 저장) ----------
 function load(){
   try{
     const raw = localStorage.getItem(STORE_KEY);
-    if(raw){ const v = JSON.parse(raw); state = {checked:v.checked||{}, custom:v.custom||[], filter:v.filter||"all"}; }
+    if(raw){ const v = JSON.parse(raw); state = {checked:v.checked||{}, custom:v.custom||[], deleted:v.deleted||[], filter:v.filter||"all"}; }
   }catch(e){ /* 첫 실행 */ }
 }
 function save(){
@@ -298,7 +299,8 @@ function flashSaved(){ const s=document.getElementById("saving"); s.classList.ad
 
 // ---------- model helpers ----------
 function allItems(){
-  const base = DATA.flatMap(d=>d.items.map(it=>({...it, cat:d.cat})));
+  const del = new Set(state.deleted);
+  const base = DATA.flatMap(d=>d.items.map(it=>({...it, cat:d.cat}))).filter(it=>!del.has(it.id));
   return base.concat(state.custom);
 }
 function itemsByCat(){
@@ -347,7 +349,7 @@ function render(){
         : '<span class="tag have">🎒 챙길 것</span>';
       const star = it.ess ? '<span class="star" title="필수">⭐</span>' : '';
       const note = it.note ? `<div class="note">${withWarn(it.note)}</div>` : '';
-      const del = it.custom ? `<button class="del" title="삭제" data-del="${it.id}">×</button>` : '';
+      const del = `<button class="del" title="삭제" data-del="${it.id}" aria-label="삭제">×</button>`;
       li.innerHTML=`<span class="box">${CHECK_SVG}</span>
         <div class="body">
           <div class="line1"><span class="name">${esc(it.name)}</span>${tag}${star}</div>
@@ -360,6 +362,7 @@ function render(){
   });
   if(shown===0){ list.innerHTML='<div class="empty">조건에 맞는 항목이 없어요. 필터를 바꿔보세요.</div>'; }
   updateProgress();
+  updateRestoreBtn();
   document.querySelectorAll(".chip").forEach(c=>c.classList.toggle("on", c.dataset.f===state.filter));
 }
 
@@ -389,7 +392,16 @@ function withWarn(s){ // keep ⚠️/🏔️ lines emphasized
 // ---------- events ----------
 document.getElementById("list").addEventListener("click",e=>{
   const del=e.target.closest("[data-del]");
-  if(del){ const id=del.dataset.del; state.custom=state.custom.filter(c=>c.id!==id); delete state.checked[id]; save(); render(); return; }
+  if(del){
+    const id=del.dataset.del;
+    const isCustom=state.custom.some(c=>c.id===id);
+    const it=allItems().find(x=>x.id===id);
+    const nm=it?it.name:"이 항목";
+    if(!confirm(`'${nm}'을(를) 삭제할까요?`+(isCustom?"":"\n(기본 항목은 '삭제 복원'으로 되살릴 수 있어요)"))) return;
+    if(isCustom){ state.custom=state.custom.filter(c=>c.id!==id); }
+    else if(!state.deleted.includes(id)){ state.deleted.push(id); }
+    delete state.checked[id]; save(); render(); return;
+  }
   const li=e.target.closest("li.item"); if(!li) return;
   const id=li.dataset.id;
   if(state.checked[id]) delete state.checked[id]; else state.checked[id]=true;
@@ -425,6 +437,20 @@ document.getElementById("resetBtn").addEventListener("click",()=>{
   }
 });
 
+document.getElementById("restoreDelBtn").addEventListener("click",()=>{
+  const n=state.deleted.length;
+  if(n && confirm(`삭제한 기본 항목 ${n}개를 모두 되살릴까요?`)){
+    state.deleted=[]; save(); render();
+  }
+});
+function updateRestoreBtn(){
+  const b=document.getElementById("restoreDelBtn");
+  if(!b) return;
+  const n=state.deleted.length;
+  b.hidden = n===0;
+  b.textContent = `삭제 복원 (${n})`;
+}
+
 // ---------- backup / restore ----------
 document.getElementById("exportBtn").addEventListener("click",()=>{
   const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});
@@ -441,7 +467,7 @@ document.getElementById("importFile").addEventListener("change",e=>{
   r.onload=()=>{
     try{
       const v=JSON.parse(r.result);
-      state={checked:v.checked||{}, custom:v.custom||[], filter:v.filter||"all"};
+      state={checked:v.checked||{}, custom:v.custom||[], deleted:v.deleted||[], filter:v.filter||"all"};
       save(); render(); alert("복원 완료!");
     }catch(err){ alert("파일을 읽을 수 없어요. 백업 JSON 파일이 맞는지 확인해 주세요."); }
     e.target.value="";
