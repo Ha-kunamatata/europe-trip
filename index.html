@@ -1,0 +1,468 @@
+<!-- Europe honeymoon packing checklist — Paris · Interlaken · Zurich · Rome, late June–early July 2026 -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>유럽 여행 준비 체크리스트</title>
+
+<!-- PWA: 홈 화면에 추가하면 앱처럼 실행 -->
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#2E6E8E">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="유럽 체크리스트">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --paper:#FBFAF7;
+    --ink:#1B2A30;
+    --ink-soft:#5A6A6F;
+    --line:#E6E1D7;
+    --glacier:#2E6E8E;   /* 알프스 빙하 */
+    --glacier-soft:#E5F0F4;
+    --sand:#C2774A;      /* 로마 햇볕/돌 */
+    --sand-soft:#F6EAE0;
+    --gold:#B7892F;
+    --done:#3C8C6E;
+    --done-soft:#E4F1EA;
+    --shadow:0 1px 2px rgba(27,42,48,.05), 0 8px 24px rgba(27,42,48,.06);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{
+    margin:0;background:var(--paper);color:var(--ink);
+    font-family:"Pretendard",system-ui,sans-serif;
+    line-height:1.55;letter-spacing:-.01em;
+  }
+  .wrap{max-width:820px;margin:0 auto;padding:28px 18px 80px}
+
+  /* ---------- header / boarding tag ---------- */
+  header{
+    background:#fff;border:1px solid var(--line);border-radius:18px;
+    overflow:hidden;box-shadow:var(--shadow);margin-bottom:18px;
+  }
+  .climate-strip{height:6px;background:linear-gradient(90deg,var(--glacier) 0%,#7fb0c4 38%,#e7c98f 62%,var(--sand) 100%)}
+  .head-body{padding:22px 22px 20px}
+  .eyebrow{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--glacier);font-weight:700;margin-bottom:6px}
+  h1{
+    font-family:"Fraunces",serif;font-weight:600;font-size:30px;line-height:1.1;
+    margin:0 0 4px;letter-spacing:-.015em;
+  }
+  h1 .kr{font-family:"Pretendard",sans-serif;font-weight:700;font-size:25px;display:block;margin-top:2px}
+  .route{color:var(--ink-soft);font-size:14px;margin-top:8px}
+  .route b{color:var(--ink);font-weight:600}
+
+  /* ---------- progress ---------- */
+  .progress-card{margin-top:18px;padding:16px;border:1px dashed var(--line);border-radius:14px;background:var(--paper)}
+  .progress-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+  .progress-top .pct{font-family:"Fraunces",serif;font-size:24px;font-weight:600;color:var(--ink)}
+  .progress-top .label{font-size:13px;color:var(--ink-soft)}
+  .bar{height:10px;border-radius:99px;background:#ECE7DC;margin-top:10px;overflow:hidden}
+  .bar > i{display:block;height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,var(--glacier),var(--done));transition:width .5s cubic-bezier(.4,0,.2,1)}
+  .mini-stats{display:flex;gap:18px;margin-top:12px;flex-wrap:wrap}
+  .mini{font-size:13px;color:var(--ink-soft)}
+  .mini b{color:var(--ink);font-weight:700;font-variant-numeric:tabular-nums}
+  .mini .buy{color:var(--sand)}
+
+  /* ---------- filter bar ---------- */
+  .filters{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0 10px;position:sticky;top:0;z-index:5;
+    background:linear-gradient(var(--paper) 70%,rgba(251,250,247,0));padding:8px 0}
+  .chip{
+    border:1px solid var(--line);background:#fff;color:var(--ink-soft);
+    padding:7px 13px;border-radius:99px;font-size:13px;font-weight:600;cursor:pointer;
+    font-family:inherit;transition:.15s;
+  }
+  .chip:hover{border-color:var(--glacier);color:var(--glacier)}
+  .chip.on{background:var(--ink);border-color:var(--ink);color:#fff}
+
+  /* ---------- sections ---------- */
+  .section{margin-top:22px}
+  .sec-head{display:flex;align-items:center;gap:10px;margin:0 2px 10px}
+  .sec-num{font-family:"Fraunces",serif;font-size:13px;color:var(--sand);font-weight:600;min-width:22px}
+  .sec-title{font-size:16px;font-weight:700}
+  .sec-count{font-size:12px;color:var(--ink-soft);font-variant-numeric:tabular-nums}
+  .sec-rule{flex:1;height:1px;background:var(--line)}
+
+  ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+  li.item{
+    display:flex;gap:12px;align-items:flex-start;
+    background:#fff;border:1px solid var(--line);border-radius:13px;padding:13px 14px;
+    box-shadow:var(--shadow);transition:.18s;cursor:pointer;
+  }
+  li.item:hover{border-color:#d3ccbe}
+  li.item.checked{background:var(--done-soft);border-color:#cfe6db}
+  li.item.checked .name{color:var(--ink-soft);text-decoration:line-through;text-decoration-color:#9bc7b4}
+
+  .box{
+    flex:none;width:22px;height:22px;border-radius:7px;border:2px solid #cfc7b7;background:#fff;
+    margin-top:1px;display:grid;place-items:center;transition:.18s;
+  }
+  .box svg{width:13px;height:13px;stroke:#fff;stroke-width:3.4;fill:none;stroke-linecap:round;stroke-linejoin:round;
+    stroke-dasharray:20;stroke-dashoffset:20;transition:stroke-dashoffset .25s ease}
+  li.item.checked .box{background:var(--done);border-color:var(--done)}
+  li.item.checked .box svg{stroke-dashoffset:0}
+
+  .body{flex:1;min-width:0}
+  .line1{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+  .name{font-size:15px;font-weight:600}
+  .tag{font-size:10.5px;font-weight:800;letter-spacing:.02em;padding:2px 7px;border-radius:6px;white-space:nowrap}
+  .tag.buy{background:var(--sand-soft);color:#9c5a30}
+  .tag.have{background:var(--glacier-soft);color:#256079}
+  .star{color:var(--gold);font-size:12px;font-weight:800}
+  .note{font-size:12.5px;color:var(--ink-soft);margin-top:4px;line-height:1.45}
+  .note .warn{color:#b4502a;font-weight:600}
+  .del{flex:none;border:none;background:none;color:#c9c1b2;font-size:18px;cursor:pointer;padding:0 2px;line-height:1;align-self:center}
+  .del:hover{color:var(--sand)}
+
+  /* ---------- add row ---------- */
+  .add{margin-top:26px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;box-shadow:var(--shadow)}
+  .add h3{margin:0 0 10px;font-size:14px;font-weight:700}
+  .add-row{display:flex;gap:8px;flex-wrap:wrap}
+  .add input[type=text]{flex:1;min-width:160px;border:1px solid var(--line);border-radius:9px;padding:9px 11px;font-family:inherit;font-size:14px;color:var(--ink)}
+  .add input:focus,.add select:focus{outline:2px solid var(--glacier-soft);border-color:var(--glacier)}
+  .add select{border:1px solid var(--line);border-radius:9px;padding:9px;font-family:inherit;font-size:13px;color:var(--ink);background:#fff}
+  .add button.addbtn{border:none;background:var(--ink);color:#fff;border-radius:9px;padding:9px 16px;font-family:inherit;font-weight:700;font-size:14px;cursor:pointer}
+  .add button.addbtn:hover{background:var(--glacier)}
+
+  /* ---------- footer actions ---------- */
+  .foot{margin-top:24px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+  .foot small{color:var(--ink-soft);font-size:12px;flex:1;min-width:200px}
+  .foot-btns{display:flex;gap:8px;flex-wrap:wrap}
+  .reset{border:1px solid var(--line);background:#fff;color:var(--ink-soft);border-radius:9px;padding:8px 14px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer}
+  .reset:hover{border-color:var(--sand);color:var(--sand)}
+  .empty{text-align:center;color:var(--ink-soft);font-size:14px;padding:30px 0}
+  .saving{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;font-size:12px;padding:7px 14px;border-radius:99px;opacity:0;transition:.3s;pointer-events:none}
+  .saving.show{opacity:.92}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="climate-strip"></div>
+    <div class="head-body">
+      <div class="eyebrow">Honeymoon · 14 days</div>
+      <h1>Alps & Mediterranean<span class="kr">유럽 신혼여행 준비 체크리스트</span></h1>
+      <div class="route"><b>파리</b> → <b>인터라켄</b> → <b>취리히</b> → <b>로마</b> · 2026년 6월 말–7월 초</div>
+      <div class="progress-card">
+        <div class="progress-top">
+          <span class="pct" id="pct">0%</span>
+          <span class="label" id="plabel">하나씩 체크해 보세요</span>
+        </div>
+        <div class="bar"><i id="barfill"></i></div>
+        <div class="mini-stats">
+          <span class="mini">전체 <b id="m-total">0</b>개 중 <b id="m-done">0</b>개 완료</span>
+          <span class="mini buy">🛒 살 것 남음 <b id="m-buy">0</b>개</span>
+          <span class="mini">🎒 챙길 것 남음 <b id="m-have">0</b>개</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="filters" id="filters">
+    <button class="chip on" data-f="all">전체</button>
+    <button class="chip" data-f="buy">🛒 살 것</button>
+    <button class="chip" data-f="have">🎒 챙길 것</button>
+    <button class="chip" data-f="ess">⭐ 필수만</button>
+    <button class="chip" data-f="left">남은 것만</button>
+  </div>
+
+  <div id="list"></div>
+
+  <div class="add">
+    <h3>내 항목 추가</h3>
+    <div class="add-row">
+      <input type="text" id="newName" placeholder="예: 변환 젠더, 슬리퍼, 여권 케이스…" maxlength="60">
+      <select id="newCat"></select>
+      <select id="newType">
+        <option value="buy">🛒 살 것</option>
+        <option value="have">🎒 챙길 것</option>
+      </select>
+      <button class="addbtn" id="addBtn">추가</button>
+    </div>
+  </div>
+
+  <div class="foot">
+    <small>⭐ = 필수 · 🛒 출발 전 구매 권장 · 🎒 집에서 챙기기 · 체크 상태는 이 기기에 자동 저장됩니다</small>
+    <div class="foot-btns">
+      <button class="reset" id="exportBtn">백업 내보내기</button>
+      <button class="reset" id="importBtn">복원</button>
+      <button class="reset" id="resetBtn">체크 전체 해제</button>
+    </div>
+    <input type="file" id="importFile" accept="application/json" hidden>
+  </div>
+</div>
+
+<div class="saving" id="saving">저장됨</div>
+
+<script>
+const STORE_KEY = "eutrip_checklist_v1";
+
+// type: buy=출발 전 구매 권장 / have=집에서 챙기기 ·  ess: 필수 여부
+const DATA = [
+  { cat:"서류 · 금융", items:[
+    {id:"d1", name:"여권", type:"have", ess:true, note:"잔여 유효기간 6개월 이상 확인. ETIAS는 2026년 4분기 도입 예정이라 7월 여행엔 불필요 — 무비자 90일."},
+    {id:"d2", name:"여권 사본 + 여권용 사진 2매", type:"have", ess:true, note:"분실·재발급 대비. 사진·사본은 클라우드에도 백업."},
+    {id:"d3", name:"항공권·숙소·기차표·입장권 예약확인서", type:"have", ess:true, note:"콜로세움·바티칸·융프라우 등 사전예약 티켓 포함. 캡처해서 오프라인 저장."},
+    {id:"d4", name:"해외결제 카드 2장 (VISA/Master)", type:"have", ess:true, note:"한 장은 따로 분리 보관. 결제 시 현지통화(EUR/CHF) 선택해 DCC 수수료 피하기."},
+    {id:"d5", name:"비상금 현금 (유로 + 소액 스위스프랑)", type:"buy", ess:true, note:"⚠️ 스위스는 EUR이 아닌 CHF 별도 통화. 카드가 잘 되니 현금은 소액만."},
+    {id:"d6", name:"여행자보험 가입", type:"buy", ess:true, note:"의료비·휴대품 도난 보장 확인. 증권 캡처해 두기."},
+  ]},
+  { cat:"통신 · 전자기기", items:[
+    {id:"e1", name:"유럽 eSIM / 유심 (3개국 커버)", type:"buy", ess:true, note:"프랑스·스위스·이탈리아 모두 포함되는 플랜으로. 출발 전 설치하고 현지 도착 후 활성화만."},
+    {id:"e2", name:"유니버설 멀티 어댑터", type:"buy", ess:true, note:"⚠️ 스위스 콘센트(Type J)는 프랑스·이탈리아(C/E)와 달라요. 둘 다 되는 멀티형 1개로 통일."},
+    {id:"e3", name:"고속 멀티 USB 충전기", type:"have", ess:true, note:"포트 여러 개짜리. 어댑터 1개에 꽂아 폰·카메라·보조배터리 동시 충전."},
+    {id:"e4", name:"보조배터리 (대용량)", type:"have", ess:true, note:"위탁수하물 금지 — 반드시 기내 휴대. 100Wh 이하만 반입 가능."},
+    {id:"e5", name:"충전 케이블 여분", type:"have", ess:false, note:"잘 끊기고 잃어버리기 쉬움. 1~2개 여유."},
+    {id:"e6", name:"미니 멀티탭", type:"buy", ess:false, note:"호텔 콘센트가 적을 때 유용. 어댑터 1개로 여러 기기 충전."},
+  ]},
+  { cat:"카메라 (Nikon Z50 II)", items:[
+    {id:"c1", name:"Z50 II 본체 + 16-50 / 50-250 렌즈", type:"have", ess:true, note:"바디캡·렌즈캡 챙기고, 비행 시 기내 휴대."},
+    {id:"c2", name:"카메라 배터리 여분 1~2개 (EN-EL25)", type:"buy", ess:true, note:"융프라우 등 고산지대 추위에 배터리가 훨씬 빨리 닳음. 여분 필수."},
+    {id:"c3", name:"메모리카드 여분", type:"buy", ess:true, note:"신혼여행이라 사진·영상 많음. 넉넉한 용량 + 1장 더."},
+    {id:"c4", name:"카메라 충전기 / USB-C 케이블", type:"have", ess:true, note:"Z50 II는 USB 충전도 가능 — 케이블 챙기면 편함."},
+    {id:"c5", name:"렌즈 클리닝 키트 (천·블로워)", type:"buy", ess:false, note:"알프스 먼지·물방울 대비."},
+    {id:"c6", name:"편한 카메라 스트랩", type:"have", ess:false, note:"하루종일 들면 목·어깨 부담. 넥/핸드 스트랩."},
+    {id:"c7", name:"24mm f/1.7 단렌즈", type:"buy", ess:false, note:"선택. 야경·실내·인물 스냅에 강함. 신혼 인생샷용."},
+  ]},
+  { cat:"의류 (더위 + 알프스 동시 대비)", items:[
+    {id:"w1", name:"반팔·얇은 셔츠 / 원피스", type:"have", ess:true, note:"파리·로마 한낮 30℃ 안팎. 통풍 잘 되는 옷."},
+    {id:"w2", name:"경량 패딩 또는 두꺼운 후드집업", type:"have", ess:true, note:"🏔️ 융프라우 정상은 한여름에도 영하. 가장 자주 빠뜨리는 필수템."},
+    {id:"w3", name:"바람막이 / 얇은 자켓", type:"have", ess:true, note:"알프스 날씨 변덕 심하고 소나기 잦음. 비·바람 대비."},
+    {id:"w4", name:"긴바지 1~2벌", type:"have", ess:true, note:"고산지대·성당 방문용."},
+    {id:"w5", name:"얇은 가디건 / 스카프", type:"have", ess:true, note:"성당·바티칸은 어깨·무릎 가리는 드레스코드. 스카프로 대체 가능."},
+    {id:"w6", name:"편한 워킹화 / 운동화", type:"have", ess:true, note:"하루 2만보 기본. 새 신발 말고 길든 신발로. 방수면 더 좋음."},
+    {id:"w7", name:"모자 + 선글라스", type:"have", ess:true, note:"고산지대 자외선·설원 눈부심 강함."},
+    {id:"w8", name:"얇은 장갑·목도리", type:"buy", ess:false, note:"추위 민감하면. 융프라우 정상 체감 매우 낮음."},
+    {id:"w9", name:"인생샷용 옷 1~2벌 (커플룩)", type:"have", ess:false, note:"호수·알프스·콜로세움 배경. 신혼 사진용."},
+    {id:"w10", name:"수영복", type:"have", ess:false, note:"호텔 수영장·스파 있을 때."},
+  ]},
+  { cat:"도난방지 · 보안", items:[
+    {id:"s1", name:"목걸이형 / 안주머니 지갑", type:"buy", ess:true, note:"여권·카드·폰은 항상 몸 안쪽에. 파리·로마 소매치기 다발."},
+    {id:"s2", name:"지퍼 잠금 크로스백 (또는 힙색)", type:"have", ess:true, note:"가방은 늘 몸 앞으로. 뒤로 메는 백팩·뒷주머니 금지. 허리에 메는 힙색이 꺼내기 쉽고 안전."},
+    {id:"s10", name:"휴대폰 넥/핸드 스트랩", type:"buy", ess:true, note:"파리·로마는 폰 낚아채기가 많음. 식당·카페 테이블 위에 폰 올려두지 않기. 신문지·서명 요청은 시선 돌리기 수법."},
+    {id:"s3", name:"RFID 차단 카드지갑", type:"buy", ess:false, note:"비접촉 카드 스키밍 예방."},
+    {id:"s6", name:"머니벨트 / 복대 (옷 안에 착용)", type:"buy", ess:false, note:"비상금·예비카드를 옷 안쪽에. 큰돈 이동·공항 이동 시 든든."},
+    {id:"s7", name:"더미 지갑 (소액·만료카드용)", type:"buy", ess:false, note:"강도 상황 대비. 소액 현금과 못 쓰는 카드만 넣어 따로 분리 휴대."},
+    {id:"s4", name:"가방 자물쇠 · 와이어 도난방지 끈", type:"buy", ess:false, note:"열차 선반·식당 의자에 가방 고정. 야간열차·기차이동 시 유용."},
+    {id:"s8", name:"분실 추적 태그 (에어태그/스마트태그)", type:"buy", ess:false, note:"캐리어·가방에 넣어 분실·도난 시 위치 추적. 위탁수하물 분실 대비에도."},
+    {id:"s5", name:"현금·카드 분산 보관", type:"have", ess:true, note:"한 곳에 몰지 않기. 비상카드·비상금은 캐리어·복대 등에 따로."},
+  ]},
+  { cat:"숙소 안전 (체크인 시)", items:[
+    {id:"h1", name:"휴대용 도어락 / 도어 스토퍼", type:"buy", ess:true, note:"숙소 문을 안에서 한 번 더 잠금. 오토락 오작동·마스터키 침입 대비. 에어비앤비·소형 호텔일수록 권장."},
+    {id:"h2", name:"문틈 도어 알람 (선택)", type:"buy", ess:false, note:"문이 열리면 큰 소리. 가볍고 작아 부담 없음. 1층·단독 숙소면 더 유용."},
+    {id:"h3", name:"몰카 탐지 앱 설치 (출발 전)", type:"have", ess:true, note:"휴대폰 카메라로 렌즈 반사·적외선 LED 확인. 체크인 직후 화재경보기·통풍구·전등·콘센트·탁상시계·연기감지기 위주로 점검."},
+    {id:"h4", name:"휴대용 몰카 탐지기 (선택)", type:"buy", ess:false, note:"불 끄고 비추면 렌즈가 빨갛게 반사돼 보임. 앱보다 정확. 예민하면 추천."},
+    {id:"h5", name:"객실 금고 / 세이프박스 활용", type:"have", ess:false, note:"여권·예비카드·현금 보관. 작동 확인 후 사용하고, 체크아웃 때 비우는 것 잊지 않기."},
+    {id:"h6", name:"비상구·문·창문 잠금 확인", type:"have", ess:false, note:"체크인 직후 비상구 위치 파악 + 창문·발코니문 잠금 상태 점검. 와이파이 연결 기기 목록에 수상한 카메라 없는지도 한 번 확인."},
+  ]},
+  { cat:"위생 · 의약품", items:[
+    {id:"m1", name:"개인 처방약 (+ 영문 처방전)", type:"have", ess:true, note:"여행기간보다 넉넉하게. 기내 휴대."},
+    {id:"m2", name:"상비약 (소화·지사·진통·감기)", type:"buy", ess:true, note:"현지에서 약 구하기 번거롭고 비쌈."},
+    {id:"m3", name:"자외선차단제 + 립밤", type:"buy", ess:true, note:"고지대 자외선 강함. 매일 덧바르기."},
+    {id:"m4", name:"멀미약", type:"buy", ess:false, note:"산악열차·굽잇길 버스 대비."},
+    {id:"m5", name:"세면도구 (액체류 100ml 이하)", type:"have", ess:true, note:"기내 반입은 100ml 이하 + 투명 지퍼백."},
+    {id:"m6", name:"휴대용 휴지 · 물티슈", type:"buy", ess:true, note:"유럽 화장실에 휴지 없는 곳 많고 공중화장실 유료."},
+    {id:"m7", name:"필터 샤워기", type:"buy", ess:false, note:"유럽 석회수로 두피·피부 트러블 잦음. 예민하면 추천."},
+  ]},
+  { cat:"편의용품", items:[
+    {id:"u1", name:"텀블러 / 물병 (500ml, 누수X)", type:"buy", ess:true, note:"로마·파리 식수대 많음. 물값·생수 절약 + 컨디션 관리."},
+    {id:"u2", name:"휴대용 우산 또는 우비", type:"have", ess:true, note:"알프스 소나기 잦음."},
+    {id:"u3", name:"목베개·안대·귀마개", type:"have", ess:false, note:"장거리 비행·야간열차용."},
+    {id:"u4", name:"옷 압축팩 / 정리 파우치", type:"buy", ess:false, note:"캐리어 공간 절약·분류. 2주 짐 정리에 유용."},
+    {id:"u5", name:"빨래망 + 여행용 세제", type:"buy", ess:false, note:"2주면 중간에 한 번 빨래."},
+    {id:"u6", name:"지퍼백·에코백 몇 장", type:"have", ess:false, note:"젖은 옷·신발·장보기·기내 정리용."},
+  ]},
+];
+
+const CAT_LIST = DATA.map(d=>d.cat);
+let state = { checked:{}, custom:[], filter:"all" };
+
+// ---------- storage (localStorage: 폰·브라우저에 그대로 저장) ----------
+function load(){
+  try{
+    const raw = localStorage.getItem(STORE_KEY);
+    if(raw){ const v = JSON.parse(raw); state = {checked:v.checked||{}, custom:v.custom||[], filter:v.filter||"all"}; }
+  }catch(e){ /* 첫 실행 */ }
+}
+function save(){
+  try{ localStorage.setItem(STORE_KEY, JSON.stringify(state)); flashSaved(); }
+  catch(e){ console.error("save failed", e); }
+}
+function flashSaved(){ const s=document.getElementById("saving"); s.classList.add("show"); setTimeout(()=>s.classList.remove("show"),900); }
+
+// ---------- model helpers ----------
+function allItems(){
+  const base = DATA.flatMap(d=>d.items.map(it=>({...it, cat:d.cat})));
+  return base.concat(state.custom);
+}
+function itemsByCat(){
+  const map={}; CAT_LIST.forEach(c=>map[c]=[]);
+  allItems().forEach(it=>{ if(!map[it.cat]) map[it.cat]=[]; map[it.cat].push(it); });
+  return map;
+}
+function passFilter(it){
+  const done=!!state.checked[it.id];
+  switch(state.filter){
+    case "buy": return it.type==="buy";
+    case "have": return it.type==="have";
+    case "ess": return !!it.ess;
+    case "left": return !done;
+    default: return true;
+  }
+}
+
+// ---------- render ----------
+const CHECK_SVG='<svg viewBox="0 0 24 24"><polyline points="4 12 10 18 20 6"/></svg>';
+function render(){
+  const map=itemsByCat();
+  const list=document.getElementById("list");
+  list.innerHTML="";
+  let shown=0;
+  CAT_LIST.concat(Object.keys(map).filter(c=>!CAT_LIST.includes(c))).forEach((cat,i)=>{
+    const items=(map[cat]||[]).filter(passFilter);
+    if(items.length===0) return;
+    shown+=items.length;
+    const doneN=items.filter(it=>state.checked[it.id]).length;
+    const sec=document.createElement("div"); sec.className="section";
+    sec.innerHTML=`<div class="sec-head">
+        <span class="sec-num">${String(i+1).padStart(2,"0")}</span>
+        <span class="sec-title">${esc(cat)}</span>
+        <span class="sec-count">${doneN}/${items.length}</span>
+        <span class="sec-rule"></span>
+      </div>`;
+    const ul=document.createElement("ul");
+    items.forEach(it=>{
+      const done=!!state.checked[it.id];
+      const li=document.createElement("li");
+      li.className="item"+(done?" checked":"");
+      li.dataset.id=it.id;
+      const tag = it.type==="buy"
+        ? '<span class="tag buy">🛒 살 것</span>'
+        : '<span class="tag have">🎒 챙길 것</span>';
+      const star = it.ess ? '<span class="star" title="필수">⭐</span>' : '';
+      const note = it.note ? `<div class="note">${withWarn(it.note)}</div>` : '';
+      const del = it.custom ? `<button class="del" title="삭제" data-del="${it.id}">×</button>` : '';
+      li.innerHTML=`<span class="box">${CHECK_SVG}</span>
+        <div class="body">
+          <div class="line1"><span class="name">${esc(it.name)}</span>${tag}${star}</div>
+          ${note}
+        </div>${del}`;
+      ul.appendChild(li);
+    });
+    sec.appendChild(ul);
+    list.appendChild(sec);
+  });
+  if(shown===0){ list.innerHTML='<div class="empty">조건에 맞는 항목이 없어요. 필터를 바꿔보세요.</div>'; }
+  updateProgress();
+  document.querySelectorAll(".chip").forEach(c=>c.classList.toggle("on", c.dataset.f===state.filter));
+}
+
+function updateProgress(){
+  const items=allItems();
+  const total=items.length;
+  const done=items.filter(it=>state.checked[it.id]).length;
+  const pct= total? Math.round(done/total*100):0;
+  document.getElementById("pct").textContent=pct+"%";
+  document.getElementById("barfill").style.width=pct+"%";
+  document.getElementById("m-total").textContent=total;
+  document.getElementById("m-done").textContent=done;
+  document.getElementById("m-buy").textContent=items.filter(it=>it.type==="buy"&&!state.checked[it.id]).length;
+  document.getElementById("m-have").textContent=items.filter(it=>it.type==="have"&&!state.checked[it.id]).length;
+  const lbl=document.getElementById("plabel");
+  lbl.textContent = pct===100 ? "준비 완료! 즐거운 여행 되세요 ✈️" : (pct===0? "하나씩 체크해 보세요" : `잘하고 있어요 — ${total-done}개 남음`);
+}
+
+// ---------- utils ----------
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+function withWarn(s){ // keep ⚠️/🏔️ lines emphasized
+  let t=esc(s);
+  if(t.includes("⚠️")) t=t.replace(/(⚠️[^.]*\.)/,'<span class="warn">$1</span>');
+  return t;
+}
+
+// ---------- events ----------
+document.getElementById("list").addEventListener("click",e=>{
+  const del=e.target.closest("[data-del]");
+  if(del){ const id=del.dataset.del; state.custom=state.custom.filter(c=>c.id!==id); delete state.checked[id]; save(); render(); return; }
+  const li=e.target.closest("li.item"); if(!li) return;
+  const id=li.dataset.id;
+  if(state.checked[id]) delete state.checked[id]; else state.checked[id]=true;
+  // update just this li for snappiness, then progress
+  li.classList.toggle("checked", !!state.checked[id]);
+  // re-render if a filter would hide/show it
+  if(state.filter==="left"){ render(); } else { updateProgress(); refreshCounts(); }
+  save();
+});
+function refreshCounts(){ render(); } // simplest: counts in headers need recompute
+
+document.getElementById("filters").addEventListener("click",e=>{
+  const b=e.target.closest(".chip"); if(!b) return;
+  state.filter=b.dataset.f; save(); render();
+});
+
+document.getElementById("addBtn").addEventListener("click",addItem);
+document.getElementById("newName").addEventListener("keydown",e=>{ if(e.key==="Enter") addItem(); });
+function addItem(){
+  const name=document.getElementById("newName").value.trim();
+  if(!name) return;
+  const cat=document.getElementById("newCat").value;
+  const type=document.getElementById("newType").value;
+  const id="x"+Date.now().toString(36)+Math.floor(Math.random()*1000);
+  state.custom.push({id,name,cat,type,custom:true,ess:false,note:""});
+  document.getElementById("newName").value="";
+  save(); render();
+}
+
+document.getElementById("resetBtn").addEventListener("click",()=>{
+  if(confirm("체크를 전부 해제할까요? (추가한 항목은 그대로 유지됩니다)")){
+    state.checked={}; save(); render();
+  }
+});
+
+// ---------- backup / restore ----------
+document.getElementById("exportBtn").addEventListener("click",()=>{
+  const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="europe-checklist-backup.json";
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+});
+document.getElementById("importBtn").addEventListener("click",()=>document.getElementById("importFile").click());
+document.getElementById("importFile").addEventListener("change",e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=()=>{
+    try{
+      const v=JSON.parse(r.result);
+      state={checked:v.checked||{}, custom:v.custom||[], filter:v.filter||"all"};
+      save(); render(); alert("복원 완료!");
+    }catch(err){ alert("파일을 읽을 수 없어요. 백업 JSON 파일이 맞는지 확인해 주세요."); }
+    e.target.value="";
+  };
+  r.readAsText(f);
+});
+
+// ---------- init ----------
+function initCatSelect(){
+  const sel=document.getElementById("newCat");
+  CAT_LIST.forEach(c=>{ const o=document.createElement("option"); o.value=c; o.textContent=c; sel.appendChild(o); });
+}
+function registerSW(){
+  if("serviceWorker" in navigator){
+    window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
+  }
+}
+(function(){
+  initCatSelect();
+  load();
+  render();
+  registerSW();
+})();
+</script>
