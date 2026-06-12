@@ -139,6 +139,34 @@
   .empty{text-align:center;color:var(--ink-soft);font-size:14px;padding:30px 0}
   .saving{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;font-size:12px;padding:7px 14px;border-radius:99px;opacity:0;transition:.3s;pointer-events:none}
   .saving.show{opacity:.92}
+
+  /* ---------- d-day ---------- */
+  .dday{display:inline-flex;align-items:center;gap:6px;margin-top:12px;font-size:13px;font-weight:700;
+    padding:6px 12px;border-radius:99px;border:1px solid var(--line);background:#fff;color:var(--ink);font-variant-numeric:tabular-nums}
+  .dday[data-s="soon"]{background:var(--glacier-soft);border-color:#bfe0ec;color:#1d5e78}
+  .dday[data-s="go"]{background:var(--done-soft);border-color:#cfe6db;color:#27795c}
+  .dday[data-s="done"]{background:var(--sand-soft);border-color:#ecd8c8;color:#9c5a30}
+
+  /* ---------- list bar / collapse ---------- */
+  .listbar{display:flex;justify-content:flex-end;margin:8px 2px 0}
+  .linkbtn{border:none;background:none;color:var(--glacier);font-family:inherit;font-size:12.5px;font-weight:700;cursor:pointer;padding:4px 6px}
+  .linkbtn:hover{text-decoration:underline}
+  .sec-head{cursor:pointer;user-select:none}
+  .sec-chev{color:var(--ink-soft);font-size:12px;transition:transform .2s;margin-left:2px}
+  .section.collapsed .sec-chev{transform:rotate(-90deg)}
+
+  /* ---------- item actions / edit ---------- */
+  .item-actions{display:flex;flex-direction:column;gap:1px;align-self:center}
+  .del.edit{font-size:14px}
+  .del.edit:hover{color:var(--glacier)}
+  li.item.editing{cursor:default;display:block}
+  .edit-form{display:flex;flex-direction:column;gap:8px;width:100%}
+  .edit-name{border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-family:inherit;font-size:14px;font-weight:600;color:var(--ink)}
+  .edit-note{border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-family:inherit;font-size:12.5px;line-height:1.45;color:var(--ink);resize:vertical}
+  .edit-name:focus,.edit-note:focus{outline:2px solid var(--glacier-soft);border-color:var(--glacier)}
+  .edit-actions{display:flex;gap:8px;justify-content:flex-end}
+  .edit-actions .addbtn{padding:7px 16px}
+
   @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 
@@ -149,6 +177,7 @@
       <div class="eyebrow">Honeymoon · 14 days</div>
       <h1>Alps & Mediterranean<span class="kr">유럽 신혼여행 준비 체크리스트</span></h1>
       <div class="route"><b>파리</b> → <b>인터라켄</b> → <b>취리히</b> → <b>로마</b> · 2026년 6월 말–7월 초</div>
+      <span class="dday" id="dday"></span>
       <div class="progress-card">
         <div class="progress-top">
           <span class="pct" id="pct">0%</span>
@@ -172,6 +201,7 @@
     <button class="chip" data-f="left">남은 것만</button>
   </div>
 
+  <div class="listbar"><button class="linkbtn" id="toggleAll">⌃ 전체 접기 / 펼치기</button></div>
   <div id="list"></div>
 
   <div class="add">
@@ -282,13 +312,13 @@ const DATA = [
 ];
 
 const CAT_LIST = DATA.map(d=>d.cat);
-let state = { checked:{}, custom:[], deleted:[], filter:"all" };
+let state = { checked:{}, custom:[], deleted:[], edits:{}, collapsed:{}, filter:"all" };
 
 // ---------- storage (localStorage: 폰·브라우저에 그대로 저장) ----------
 function load(){
   try{
     const raw = localStorage.getItem(STORE_KEY);
-    if(raw){ const v = JSON.parse(raw); state = {checked:v.checked||{}, custom:v.custom||[], deleted:v.deleted||[], filter:v.filter||"all"}; }
+    if(raw){ const v = JSON.parse(raw); state = {checked:v.checked||{}, custom:v.custom||[], deleted:v.deleted||[], edits:v.edits||{}, collapsed:v.collapsed||{}, filter:v.filter||"all"}; }
   }catch(e){ /* 첫 실행 */ }
 }
 function save(){
@@ -301,7 +331,10 @@ function flashSaved(){ const s=document.getElementById("saving"); s.classList.ad
 function allItems(){
   const del = new Set(state.deleted);
   const base = DATA.flatMap(d=>d.items.map(it=>({...it, cat:d.cat}))).filter(it=>!del.has(it.id));
-  return base.concat(state.custom);
+  return base.concat(state.custom).map(it=>{
+    const ov = state.edits[it.id];
+    return ov ? {...it, ...ov} : it;   // 이름·메모 사용자 수정 반영
+  });
 }
 function itemsByCat(){
   const map={}; CAT_LIST.forEach(c=>map[c]=[]);
@@ -331,33 +364,40 @@ function render(){
     if(items.length===0) return;
     shown+=items.length;
     const doneN=items.filter(it=>state.checked[it.id]).length;
-    const sec=document.createElement("div"); sec.className="section";
-    sec.innerHTML=`<div class="sec-head">
+    const collapsed=!!state.collapsed[cat];
+    const sec=document.createElement("div"); sec.className="section"+(collapsed?" collapsed":"");
+    sec.innerHTML=`<div class="sec-head" data-cat="${esc(cat)}">
         <span class="sec-num">${String(i+1).padStart(2,"0")}</span>
         <span class="sec-title">${esc(cat)}</span>
         <span class="sec-count">${doneN}/${items.length}</span>
         <span class="sec-rule"></span>
+        <span class="sec-chev">▾</span>
       </div>`;
-    const ul=document.createElement("ul");
-    items.forEach(it=>{
-      const done=!!state.checked[it.id];
-      const li=document.createElement("li");
-      li.className="item"+(done?" checked":"");
-      li.dataset.id=it.id;
-      const tag = it.type==="buy"
-        ? '<span class="tag buy">🛒 살 것</span>'
-        : '<span class="tag have">🎒 챙길 것</span>';
-      const star = it.ess ? '<span class="star" title="필수">⭐</span>' : '';
-      const note = it.note ? `<div class="note">${withWarn(it.note)}</div>` : '';
-      const del = `<button class="del" title="삭제" data-del="${it.id}" aria-label="삭제">×</button>`;
-      li.innerHTML=`<span class="box">${CHECK_SVG}</span>
-        <div class="body">
-          <div class="line1"><span class="name">${esc(it.name)}</span>${tag}${star}</div>
-          ${note}
-        </div>${del}`;
-      ul.appendChild(li);
-    });
-    sec.appendChild(ul);
+    if(!collapsed){
+      const ul=document.createElement("ul");
+      items.forEach(it=>{
+        const done=!!state.checked[it.id];
+        const li=document.createElement("li");
+        li.className="item"+(done?" checked":"");
+        li.dataset.id=it.id;
+        const tag = it.type==="buy"
+          ? '<span class="tag buy">🛒 살 것</span>'
+          : '<span class="tag have">🎒 챙길 것</span>';
+        const star = it.ess ? '<span class="star" title="필수">⭐</span>' : '';
+        const note = it.note ? `<div class="note">${withWarn(it.note)}</div>` : '';
+        const actions = `<div class="item-actions">`
+          + `<button class="del edit" title="수정" data-edit="${it.id}" aria-label="수정">✎</button>`
+          + `<button class="del" title="삭제" data-del="${it.id}" aria-label="삭제">×</button>`
+          + `</div>`;
+        li.innerHTML=`<span class="box">${CHECK_SVG}</span>
+          <div class="body">
+            <div class="line1"><span class="name">${esc(it.name)}</span>${tag}${star}</div>
+            ${note}
+          </div>${actions}`;
+        ul.appendChild(li);
+      });
+      sec.appendChild(ul);
+    }
     list.appendChild(sec);
   });
   if(shown===0){ list.innerHTML='<div class="empty">조건에 맞는 항목이 없어요. 필터를 바꿔보세요.</div>'; }
@@ -391,6 +431,19 @@ function withWarn(s){ // keep ⚠️/🏔️ lines emphasized
 
 // ---------- events ----------
 document.getElementById("list").addEventListener("click",e=>{
+  // 카테고리 접기/펼치기
+  const head=e.target.closest(".sec-head");
+  if(head){ const cat=head.dataset.cat; state.collapsed[cat]=!state.collapsed[cat]; save(); render(); return; }
+  // 편집 폼 내부 클릭(저장/취소/입력) — 체크 토글 막음
+  if(e.target.closest(".edit-form")){
+    if(e.target.closest("[data-savedit]")) saveEdit(e.target.closest("[data-savedit]").dataset.savedit);
+    else if(e.target.closest("[data-canceledit]")) render();
+    return;
+  }
+  // 수정 버튼
+  const ed=e.target.closest("[data-edit]");
+  if(ed){ openEdit(ed.dataset.edit); return; }
+  // 삭제 버튼
   const del=e.target.closest("[data-del]");
   if(del){
     const id=del.dataset.del;
@@ -400,9 +453,9 @@ document.getElementById("list").addEventListener("click",e=>{
     if(!confirm(`'${nm}'을(를) 삭제할까요?`+(isCustom?"":"\n(기본 항목은 '삭제 복원'으로 되살릴 수 있어요)"))) return;
     if(isCustom){ state.custom=state.custom.filter(c=>c.id!==id); }
     else if(!state.deleted.includes(id)){ state.deleted.push(id); }
-    delete state.checked[id]; save(); render(); return;
+    delete state.checked[id]; delete state.edits[id]; save(); render(); return;
   }
-  const li=e.target.closest("li.item"); if(!li) return;
+  const li=e.target.closest("li.item"); if(!li||li.classList.contains("editing")) return;
   const id=li.dataset.id;
   if(state.checked[id]) delete state.checked[id]; else state.checked[id]=true;
   // update just this li for snappiness, then progress
@@ -451,6 +504,54 @@ function updateRestoreBtn(){
   b.textContent = `삭제 복원 (${n})`;
 }
 
+// ---------- 항목 인라인 수정 ----------
+function openEdit(id){
+  const it=allItems().find(x=>x.id===id); if(!it) return;
+  const li=document.querySelector(`li.item[data-id="${id}"]`); if(!li) return;
+  li.classList.add("editing");
+  li.innerHTML=`<div class="edit-form">
+      <input class="edit-name" type="text" maxlength="80" value="${esc(it.name)}" placeholder="항목 이름">
+      <textarea class="edit-note" rows="3" maxlength="400" placeholder="메모 (선택)">${esc(it.note||"")}</textarea>
+      <div class="edit-actions">
+        <button class="reset" data-canceledit="1">취소</button>
+        <button class="addbtn" data-savedit="${id}">저장</button>
+      </div>
+    </div>`;
+  const nm=li.querySelector(".edit-name");
+  nm.focus(); nm.setSelectionRange(nm.value.length, nm.value.length);
+}
+function saveEdit(id){
+  const li=document.querySelector(`li.item[data-id="${id}"]`); if(!li) return;
+  const name=li.querySelector(".edit-name").value.trim();
+  const note=li.querySelector(".edit-note").value.trim();
+  if(!name){ alert("이름을 입력해 주세요."); return; }
+  state.edits[id]={name, note};
+  save(); render();
+}
+
+// ---------- 전체 접기/펼치기 ----------
+document.getElementById("toggleAll").addEventListener("click",()=>{
+  const cats=Object.keys(itemsByCat());
+  const anyOpen=cats.some(c=>!state.collapsed[c]);
+  cats.forEach(c=>{ state.collapsed[c]=anyOpen; });  // 하나라도 열려 있으면 전부 접기
+  save(); render();
+});
+
+// ---------- D-day ----------
+function setDday(){
+  const el=document.getElementById("dday"); if(!el) return;
+  const ms=864e5;
+  const start=new Date(2026,5,21), end=new Date(2026,6,4);  // 6/21 ~ 7/4
+  const n=new Date(); const today=new Date(n.getFullYear(),n.getMonth(),n.getDate());
+  const dStart=Math.round((start-today)/ms), dEnd=Math.round((end-today)/ms);
+  let txt,s;
+  if(dStart>0){ txt=`✈️ 파리 출발 D-${dStart}`; s="soon"; }
+  else if(dStart===0){ txt="🎉 오늘 출발! 즐거운 신혼여행 되세요"; s="go"; }
+  else if(dEnd>=0){ txt=`🧳 여행 중 · ${-dStart+1}일차 / 14일`; s="go"; }
+  else { txt="🏠 여행 종료 · 수고 많으셨어요"; s="done"; }
+  el.textContent=txt; el.dataset.s=s;
+}
+
 // ---------- backup / restore ----------
 document.getElementById("exportBtn").addEventListener("click",()=>{
   const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});
@@ -467,7 +568,7 @@ document.getElementById("importFile").addEventListener("change",e=>{
   r.onload=()=>{
     try{
       const v=JSON.parse(r.result);
-      state={checked:v.checked||{}, custom:v.custom||[], deleted:v.deleted||[], filter:v.filter||"all"};
+      state={checked:v.checked||{}, custom:v.custom||[], deleted:v.deleted||[], edits:v.edits||{}, collapsed:v.collapsed||{}, filter:v.filter||"all"};
       save(); render(); alert("복원 완료!");
     }catch(err){ alert("파일을 읽을 수 없어요. 백업 JSON 파일이 맞는지 확인해 주세요."); }
     e.target.value="";
@@ -488,6 +589,7 @@ function registerSW(){
 (function(){
   initCatSelect();
   load();
+  setDday();
   render();
   registerSW();
 })();
