@@ -1,7 +1,7 @@
 {
-  "name": "유럽 여행 준비 체크리스트",
-  "short_name": "유럽 체크리스트",
-  "description": "파리 · 인터라켄 · 취리히 · 로마 신혼여행 준비 체크리스트",
+  "name": "체크리스트",
+  "short_name": "체크리스트",
+  "description": "여러 리스트를 관리하는 범용 체크리스트 — 오프라인 저장",
   "lang": "ko",
   "start_url": ".",
   "scope": ".",

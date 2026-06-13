@@ -1,7 +1,7 @@
-<!-- Europe honeymoon packing checklist — Paris · Interlaken · Zurich · Rome, late June–early July 2026 -->
+<!-- 범용 체크리스트 PWA — 여러 리스트 + 브라우저 내장 DB(IndexedDB) · 오프라인 -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>유럽 여행 준비 체크리스트</title>
+<title>체크리스트</title>
 
 <!-- PWA: 홈 화면에 추가하면 앱처럼 실행 -->
 <link rel="manifest" href="manifest.webmanifest">
@@ -9,7 +9,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="유럽 체크리스트">
+<meta name="apple-mobile-web-app-title" content="체크리스트">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 
@@ -25,9 +25,9 @@
     --ink:#1B2A30;
     --ink-soft:#5A6A6F;
     --line:#E6E1D7;
-    --glacier:#2E6E8E;   /* 알프스 빙하 */
+    --glacier:#2E6E8E;
     --glacier-soft:#E5F0F4;
-    --sand:#C2774A;      /* 로마 햇볕/돌 */
+    --sand:#C2774A;
     --sand-soft:#F6EAE0;
     --gold:#B7892F;
     --done:#3C8C6E;
@@ -40,23 +40,29 @@
     font-family:"Pretendard",system-ui,sans-serif;
     line-height:1.55;letter-spacing:-.01em;
   }
-  .wrap{max-width:820px;margin:0 auto;padding:28px 18px 80px}
+  .wrap{max-width:820px;margin:0 auto;padding:22px 18px 80px}
 
-  /* ---------- header / boarding tag ---------- */
-  header{
-    background:#fff;border:1px solid var(--line);border-radius:18px;
-    overflow:hidden;box-shadow:var(--shadow);margin-bottom:18px;
-  }
+  /* ---------- list switcher ---------- */
+  .topbar{display:flex;gap:8px;align-items:center;margin-bottom:14px}
+  .listsel{flex:1;min-width:0;border:1px solid var(--line);background:#fff;border-radius:12px;
+    padding:11px 12px;font-family:inherit;font-size:15px;font-weight:700;color:var(--ink);box-shadow:var(--shadow)}
+  .listsel:focus{outline:2px solid var(--glacier-soft);border-color:var(--glacier)}
+  .iconbtn{flex:none;width:44px;height:44px;border-radius:12px;border:1px solid var(--line);background:#fff;
+    color:var(--ink-soft);font-size:20px;cursor:pointer;display:grid;place-items:center;transition:.15s;box-shadow:var(--shadow)}
+  .iconbtn:hover{border-color:var(--glacier);color:var(--glacier);background:var(--glacier-soft)}
+  .iconbtn:active{transform:scale(.94)}
+
+  /* ---------- header ---------- */
+  header{background:#fff;border:1px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:var(--shadow);margin-bottom:18px}
   .climate-strip{height:6px;background:linear-gradient(90deg,var(--glacier) 0%,#7fb0c4 38%,#e7c98f 62%,var(--sand) 100%)}
-  .head-body{padding:22px 22px 20px}
+  .head-body{padding:20px 22px}
   .eyebrow{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--glacier);font-weight:700;margin-bottom:6px}
-  h1{
-    font-family:"Fraunces",serif;font-weight:600;font-size:30px;line-height:1.1;
-    margin:0 0 4px;letter-spacing:-.015em;
-  }
-  h1 .kr{font-family:"Pretendard",sans-serif;font-weight:700;font-size:25px;display:block;margin-top:2px}
-  .route{color:var(--ink-soft);font-size:14px;margin-top:8px}
-  .route b{color:var(--ink);font-weight:600}
+  h1{font-family:"Pretendard",sans-serif;font-weight:700;font-size:25px;line-height:1.15;margin:0;letter-spacing:-.015em}
+  .dday{display:inline-flex;align-items:center;gap:6px;margin-top:12px;font-size:13px;font-weight:700;
+    padding:6px 12px;border-radius:99px;border:1px solid var(--line);background:#fff;color:var(--ink);font-variant-numeric:tabular-nums}
+  .dday[data-s="soon"]{background:var(--glacier-soft);border-color:#bfe0ec;color:#1d5e78}
+  .dday[data-s="go"]{background:var(--done-soft);border-color:#cfe6db;color:#27795c}
+  .dday[data-s="done"]{background:var(--sand-soft);border-color:#ecd8c8;color:#9c5a30}
 
   /* ---------- progress ---------- */
   .progress-card{margin-top:18px;padding:16px;border:1px dashed var(--line);border-radius:14px;background:var(--paper)}
@@ -73,41 +79,33 @@
   /* ---------- filter bar ---------- */
   .filters{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0 10px;position:sticky;top:0;z-index:5;
     background:linear-gradient(var(--paper) 70%,rgba(251,250,247,0));padding:8px 0}
-  .chip{
-    border:1px solid var(--line);background:#fff;color:var(--ink-soft);
-    padding:7px 13px;border-radius:99px;font-size:13px;font-weight:600;cursor:pointer;
-    font-family:inherit;transition:.15s;
-  }
+  .chip{border:1px solid var(--line);background:#fff;color:var(--ink-soft);
+    padding:7px 13px;border-radius:99px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:.15s}
   .chip:hover{border-color:var(--glacier);color:var(--glacier)}
   .chip.on{background:var(--ink);border-color:var(--ink);color:#fff}
 
   /* ---------- sections ---------- */
   .section{margin-top:22px}
-  .sec-head{display:flex;align-items:center;gap:10px;margin:0 2px 10px}
+  .sec-head{display:flex;align-items:center;gap:10px;margin:0 2px 10px;cursor:pointer;user-select:none}
   .sec-num{font-family:"Fraunces",serif;font-size:13px;color:var(--sand);font-weight:600;min-width:22px}
   .sec-title{font-size:16px;font-weight:700}
   .sec-count{font-size:12px;color:var(--ink-soft);font-variant-numeric:tabular-nums}
   .sec-rule{flex:1;height:1px;background:var(--line)}
+  .sec-chev{color:var(--ink-soft);font-size:12px;transition:transform .2s;margin-left:2px}
+  .section.collapsed .sec-chev{transform:rotate(-90deg)}
 
   ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
-  li.item{
-    display:flex;gap:12px;align-items:flex-start;
-    background:#fff;border:1px solid var(--line);border-radius:13px;padding:13px 14px;
-    box-shadow:var(--shadow);transition:.18s;cursor:pointer;
-  }
+  li.item{display:flex;gap:12px;align-items:flex-start;background:#fff;border:1px solid var(--line);
+    border-radius:13px;padding:13px 14px;box-shadow:var(--shadow);transition:.18s;cursor:pointer}
   li.item:hover{border-color:#d3ccbe}
   li.item.checked{background:var(--done-soft);border-color:#cfe6db}
   li.item.checked .name{color:var(--ink-soft);text-decoration:line-through;text-decoration-color:#9bc7b4}
-
-  .box{
-    flex:none;width:22px;height:22px;border-radius:7px;border:2px solid #cfc7b7;background:#fff;
-    margin-top:1px;display:grid;place-items:center;transition:.18s;
-  }
+  .box{flex:none;width:22px;height:22px;border-radius:7px;border:2px solid #cfc7b7;background:#fff;
+    margin-top:1px;display:grid;place-items:center;transition:.18s}
   .box svg{width:13px;height:13px;stroke:#fff;stroke-width:3.4;fill:none;stroke-linecap:round;stroke-linejoin:round;
     stroke-dasharray:20;stroke-dashoffset:20;transition:stroke-dashoffset .25s ease}
   li.item.checked .box{background:var(--done);border-color:var(--done)}
   li.item.checked .box svg{stroke-dashoffset:0}
-
   .body{flex:1;min-width:0}
   .line1{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
   .name{font-size:15px;font-weight:600}
@@ -115,79 +113,52 @@
   .tag.buy{background:var(--sand-soft);color:#9c5a30}
   .tag.have{background:var(--glacier-soft);color:#256079}
   .star{color:var(--gold);font-size:12px;font-weight:800}
+  .price{font-size:11px;font-weight:800;padding:2px 7px;border-radius:6px;white-space:nowrap;
+    background:#EAF3EE;color:#27795c;cursor:pointer;font-variant-numeric:tabular-nums}
+  .price:hover{background:#d7ebe0}
+  li.item.checked .price{background:#dcebe3}
   .note{font-size:12.5px;color:var(--ink-soft);margin-top:4px;line-height:1.45}
   .note .warn{color:#b4502a;font-weight:600}
   .del{flex:none;width:36px;height:36px;border-radius:10px;border:1px solid var(--line);background:#fff;
     color:var(--ink-soft);font-size:20px;line-height:1;cursor:pointer;padding:0;display:grid;place-items:center;transition:.15s}
   .del:hover{border-color:var(--sand);color:var(--sand);background:var(--sand-soft)}
   .del:active{transform:scale(.92)}
-
-  /* ---------- add row ---------- */
-  .add{margin-top:26px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;box-shadow:var(--shadow)}
-  .add h3{margin:0 0 10px;font-size:14px;font-weight:700}
-  .add-row{display:flex;gap:8px;flex-wrap:wrap}
-  .add input[type=text]{flex:1;min-width:160px;border:1px solid var(--line);border-radius:9px;padding:9px 11px;font-family:inherit;font-size:14px;color:var(--ink)}
-  .add input:focus,.add select:focus{outline:2px solid var(--glacier-soft);border-color:var(--glacier)}
-  .add select{border:1px solid var(--line);border-radius:9px;padding:9px;font-family:inherit;font-size:13px;color:var(--ink);background:#fff}
-  .add button.addbtn{border:none;background:var(--ink);color:#fff;border-radius:9px;padding:9px 16px;font-family:inherit;font-weight:700;font-size:14px;cursor:pointer}
-  .add button.addbtn:hover{background:var(--glacier)}
-
-  /* ---------- footer actions ---------- */
-  .foot{margin-top:24px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
-  .foot small{color:var(--ink-soft);font-size:12px;flex:1;min-width:200px}
-  .foot-btns{display:flex;gap:8px;flex-wrap:wrap}
-  .reset{border:1px solid var(--line);background:#fff;color:var(--ink-soft);border-radius:9px;padding:8px 14px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer}
-  .reset:hover{border-color:var(--sand);color:var(--sand)}
-  .empty{text-align:center;color:var(--ink-soft);font-size:14px;padding:30px 0}
-  .saving{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;font-size:12px;padding:7px 14px;border-radius:99px;opacity:0;transition:.3s;pointer-events:none}
-  .saving.show{opacity:.92}
-
-  /* ---------- d-day ---------- */
-  .dday{display:inline-flex;align-items:center;gap:6px;margin-top:12px;font-size:13px;font-weight:700;
-    padding:6px 12px;border-radius:99px;border:1px solid var(--line);background:#fff;color:var(--ink);font-variant-numeric:tabular-nums}
-  .dday[data-s="soon"]{background:var(--glacier-soft);border-color:#bfe0ec;color:#1d5e78}
-  .dday[data-s="go"]{background:var(--done-soft);border-color:#cfe6db;color:#27795c}
-  .dday[data-s="done"]{background:var(--sand-soft);border-color:#ecd8c8;color:#9c5a30}
-
-  /* ---------- list bar / collapse ---------- */
-  .listbar{display:flex;justify-content:flex-end;margin:8px 2px 0}
-  .linkbtn{border:none;background:none;color:var(--glacier);font-family:inherit;font-size:12.5px;font-weight:700;cursor:pointer;padding:4px 6px}
-  .linkbtn:hover{text-decoration:underline}
-  .sec-head{cursor:pointer;user-select:none}
-  .sec-chev{color:var(--ink-soft);font-size:12px;transition:transform .2s;margin-left:2px}
-  .section.collapsed .sec-chev{transform:rotate(-90deg)}
-
-  /* ---------- item actions / edit ---------- */
   .item-actions{display:flex;gap:6px;align-self:center}
   .del.edit{font-size:17px}
   .del.edit:hover{border-color:var(--glacier);color:var(--glacier);background:var(--glacier-soft)}
+
+  /* ---------- inline edit ---------- */
   li.item.editing{cursor:default;display:block;border-color:var(--glacier);box-shadow:0 0 0 3px var(--glacier-soft)}
   .edit-form{display:flex;flex-direction:column;gap:10px;width:100%}
   .edit-form .ef-label{font-size:11px;font-weight:800;letter-spacing:.04em;color:var(--ink-soft);text-transform:uppercase;margin-bottom:-4px}
   .edit-name{border:1px solid var(--line);border-radius:8px;padding:9px 11px;font-family:inherit;font-size:15px;font-weight:600;color:var(--ink)}
   .edit-note{border:1px solid var(--line);border-radius:8px;padding:9px 11px;font-family:inherit;font-size:13px;line-height:1.45;color:var(--ink);resize:vertical}
-  .edit-name:focus,.edit-note:focus,.edit-cat:focus,.edit-type:focus{outline:2px solid var(--glacier-soft);border-color:var(--glacier)}
-  .edit-opts{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .edit-name:focus,.edit-note:focus,.edit-cat:focus,.edit-type:focus,.edit-cost:focus{outline:2px solid var(--glacier-soft);border-color:var(--glacier)}
+  .edit-opts{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end}
   .edit-opts .field{display:flex;flex-direction:column;gap:3px}
   .edit-opts .field > span{font-size:10.5px;font-weight:800;letter-spacing:.03em;color:var(--ink-soft);text-transform:uppercase}
   .edit-cat,.edit-type{border:1px solid var(--line);border-radius:8px;padding:8px 9px;font-family:inherit;font-size:13px;color:var(--ink);background:#fff}
+  .edit-cost{border:1px solid var(--line);border-radius:8px;padding:8px 9px;font-family:inherit;font-size:13px;color:var(--ink);background:#fff;width:120px}
   .edit-ess-wrap{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:8px;
-    padding:9px 11px;font-size:13px;font-weight:600;color:var(--ink);cursor:pointer;align-self:flex-end;user-select:none}
+    padding:9px 11px;font-size:13px;font-weight:600;color:var(--ink);cursor:pointer;user-select:none}
   .edit-ess-wrap.on{background:#FBF3DD;border-color:var(--gold);color:#8a6a1f}
   .edit-ess{width:17px;height:17px;accent-color:var(--gold);margin:0}
   .edit-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:2px}
   .edit-actions .addbtn{padding:8px 18px}
   .edit-actions .reset{padding:8px 14px}
-  .edit-cost{border:1px solid var(--line);border-radius:8px;padding:8px 9px;font-family:inherit;font-size:13px;color:var(--ink);background:#fff;width:120px}
-  .edit-cost:focus{outline:2px solid var(--glacier-soft);border-color:var(--glacier)}
 
-  /* ---------- price chip / spending ---------- */
-  .price{font-size:11px;font-weight:800;padding:2px 7px;border-radius:6px;white-space:nowrap;
-    background:#EAF3EE;color:#27795c;cursor:pointer;font-variant-numeric:tabular-nums}
-  .price:hover{background:#d7ebe0}
-  li.item.checked .price{background:#dcebe3}
+  /* ---------- add row ---------- */
+  .add{margin-top:0;background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;box-shadow:var(--shadow)}
+  .add h3{margin:0 0 10px;font-size:14px;font-weight:700}
+  .add-row{display:flex;gap:8px;flex-wrap:wrap}
+  .add input[type=text]{flex:1;min-width:150px;border:1px solid var(--line);border-radius:9px;padding:9px 11px;font-family:inherit;font-size:14px;color:var(--ink)}
   .add input[type=number]{width:120px;border:1px solid var(--line);border-radius:9px;padding:9px 11px;font-family:inherit;font-size:14px;color:var(--ink)}
+  .add input:focus,.add select:focus{outline:2px solid var(--glacier-soft);border-color:var(--glacier)}
+  .add select{border:1px solid var(--line);border-radius:9px;padding:9px;font-family:inherit;font-size:13px;color:var(--ink);background:#fff}
+  .add button.addbtn{border:none;background:var(--ink);color:#fff;border-radius:9px;padding:9px 16px;font-family:inherit;font-weight:700;font-size:14px;cursor:pointer}
+  .add button.addbtn:hover{background:var(--glacier)}
 
+  /* ---------- spending ---------- */
   .spend-card{margin-top:18px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px 18px;box-shadow:var(--shadow)}
   .spend-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
   .spend-eyebrow{font-size:12px;font-weight:700;color:var(--done);letter-spacing:.02em;margin-bottom:4px}
@@ -201,19 +172,55 @@
   .spend-row .samt{color:var(--ink-soft);font-variant-numeric:tabular-nums;font-weight:700}
   .spend-bar{grid-column:1/3;height:6px;border-radius:99px;background:#EFEADF;overflow:hidden}
   .spend-bar > i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--done),#7fb0c4)}
-  .spend-empty{font-size:12.5px;color:var(--ink-soft);margin-top:6px}
+
+  /* ---------- misc ---------- */
+  .listbar{display:flex;justify-content:flex-end;margin:8px 2px 0}
+  .linkbtn{border:none;background:none;color:var(--glacier);font-family:inherit;font-size:12.5px;font-weight:700;cursor:pointer;padding:4px 6px}
+  .linkbtn:hover{text-decoration:underline}
+  .foot{margin-top:24px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+  .foot small{color:var(--ink-soft);font-size:12px;flex:1;min-width:200px}
+  .foot-btns{display:flex;gap:8px;flex-wrap:wrap}
+  .reset{border:1px solid var(--line);background:#fff;color:var(--ink-soft);border-radius:9px;padding:8px 14px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer}
+  .reset:hover{border-color:var(--sand);color:var(--sand)}
+  .reset.danger{color:#b4502a;border-color:#e6c6b6}
+  .empty{text-align:center;color:var(--ink-soft);font-size:14px;padding:30px 0}
+  .saving{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;font-size:12px;padding:7px 14px;border-radius:99px;opacity:0;transition:.3s;pointer-events:none}
+  .saving.show{opacity:.92}
+
+  /* ---------- modal ---------- */
+  .modal{position:fixed;inset:0;background:rgba(27,42,48,.45);display:grid;place-items:center;padding:18px;z-index:50}
+  .modal[hidden]{display:none}
+  .modal-card{background:#fff;border-radius:18px;box-shadow:0 20px 60px rgba(0,0,0,.25);width:100%;max-width:420px;max-height:90vh;overflow:auto;padding:20px}
+  .modal-card h3{margin:0 0 14px;font-size:18px}
+  .mfield{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+  .mfield > span{font-size:11px;font-weight:800;letter-spacing:.03em;color:var(--ink-soft);text-transform:uppercase}
+  .mfield input,.mfield select{border:1px solid var(--line);border-radius:9px;padding:10px 11px;font-family:inherit;font-size:14px;color:var(--ink);background:#fff}
+  .mfield input:focus,.mfield select:focus{outline:2px solid var(--glacier-soft);border-color:var(--glacier)}
+  .mfield.row{flex-direction:row;gap:10px}
+  .mfield.row label{flex:1;display:flex;flex-direction:column;gap:5px;font-size:11px;font-weight:800;letter-spacing:.03em;color:var(--ink-soft);text-transform:uppercase}
+  .mcheck{display:flex;align-items:center;gap:9px;font-size:14px;font-weight:600;color:var(--ink);padding:7px 0;cursor:pointer}
+  .mcheck input{width:18px;height:18px;accent-color:var(--glacier)}
+  .modal-actions{display:flex;align-items:center;gap:8px;margin-top:10px}
+  .modal-actions .addbtn{border:none;background:var(--ink);color:#fff;border-radius:9px;padding:10px 18px;font-family:inherit;font-weight:700;font-size:14px;cursor:pointer}
+  .modal-actions .addbtn:hover{background:var(--glacier)}
+  .grow{flex:1}
 
   @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 
 <div class="wrap">
+  <div class="topbar">
+    <select class="listsel" id="listSelect" aria-label="리스트 선택"></select>
+    <button class="iconbtn" id="newListBtn" title="새 리스트 만들기" aria-label="새 리스트">＋</button>
+    <button class="iconbtn" id="manageListBtn" title="이 리스트 설정" aria-label="리스트 설정">⚙</button>
+  </div>
+
   <header>
     <div class="climate-strip"></div>
     <div class="head-body">
-      <div class="eyebrow">Honeymoon · 14 days</div>
-      <h1>Alps & Mediterranean<span class="kr">유럽 신혼여행 준비 체크리스트</span></h1>
-      <div class="route"><b>파리</b> → <b>인터라켄</b> → <b>취리히</b> → <b>로마</b> · 2026년 6월 말–7월 초</div>
-      <span class="dday" id="dday"></span>
+      <div class="eyebrow">체크리스트</div>
+      <h1 id="listTitle">리스트</h1>
+      <span class="dday" id="dday" hidden></span>
       <div class="progress-card">
         <div class="progress-top">
           <span class="pct" id="pct">0%</span>
@@ -230,9 +237,9 @@
   </header>
 
   <div class="add">
-    <h3>내 항목 추가</h3>
+    <h3>항목 추가</h3>
     <div class="add-row">
-      <input type="text" id="newName" placeholder="예: 변환 젠더, 슬리퍼, 여권 케이스…" maxlength="60">
+      <input type="text" id="newName" placeholder="추가할 항목 이름…" maxlength="60">
       <select id="newCat"></select>
       <select id="newType">
         <option value="buy">🛒 살 것</option>
@@ -243,10 +250,10 @@
     </div>
   </div>
 
-  <div class="spend-card" id="spendCard">
+  <div class="spend-card" id="spendCard" hidden>
     <div class="spend-top">
       <div>
-        <div class="spend-eyebrow">💰 준비 지출 — 사용 금액</div>
+        <div class="spend-eyebrow">💰 지출 — 사용 금액</div>
         <div class="spend-total" id="spendSpent">₩0</div>
       </div>
       <div class="spend-sub">
@@ -270,154 +277,254 @@
   <div id="list"></div>
 
   <div class="foot">
-    <small>⭐ = 필수 · 🛒 출발 전 구매 권장 · 🎒 집에서 챙기기 · 체크 상태는 이 기기에 자동 저장됩니다</small>
+    <small>⭐ = 필수 · 🛒 살 것 · 🎒 챙길 것 · 데이터는 이 기기에 자동 저장(오프라인) · 백업으로 다른 기기에 옮기세요</small>
     <div class="foot-btns">
       <button class="reset" id="exportBtn">백업 내보내기</button>
       <button class="reset" id="importBtn">복원</button>
-      <button class="reset" id="restoreDelBtn" hidden>삭제 복원</button>
       <button class="reset" id="resetBtn">체크 전체 해제</button>
     </div>
     <input type="file" id="importFile" accept="application/json" hidden>
   </div>
 </div>
 
+<!-- 리스트 만들기/설정 모달 -->
+<div class="modal" id="modal" hidden>
+  <div class="modal-card">
+    <h3 id="modalTitle">새 리스트</h3>
+    <label class="mfield"><span>리스트 이름</span>
+      <input id="mName" type="text" maxlength="40" placeholder="예: 장보기, 이사 준비, 주간 할 일">
+    </label>
+    <label class="mfield"><span>아이콘 (이모지)</span>
+      <input id="mEmoji" type="text" maxlength="4" placeholder="📋">
+    </label>
+    <div class="mfield" id="mTemplateWrap"><span>시작 항목</span>
+      <select id="mTemplate">
+        <option value="blank">빈 리스트로 시작</option>
+        <option value="travel">여행 준비물 (신혼여행 항목 전체 복제)</option>
+        <option value="shopping">장보기 기본 항목</option>
+      </select>
+    </div>
+    <label class="mcheck"><input type="checkbox" id="mSpending"> 💰 지출 통계 사용 (살 것 금액 합계)</label>
+    <label class="mcheck"><input type="checkbox" id="mDday"> 📅 D-day 카운트다운 사용</label>
+    <div class="mfield row" id="mDdayRow" hidden>
+      <label><span>시작일</span><input id="mStart" type="date"></label>
+      <label><span>종료일(선택)</span><input id="mEnd" type="date"></label>
+    </div>
+    <div class="modal-actions">
+      <button class="reset danger" id="mDelete" hidden>리스트 삭제</button>
+      <span class="grow"></span>
+      <button class="reset" id="mCancel">취소</button>
+      <button class="addbtn" id="mSave">저장</button>
+    </div>
+  </div>
+</div>
+
 <div class="saving" id="saving">저장됨</div>
 
 <script>
-const STORE_KEY = "eutrip_checklist_v1";
+/* ============================================================
+   범용 체크리스트 — 여러 리스트 + IndexedDB 저장 (오프라인)
+   ============================================================ */
 
-// type: buy=출발 전 구매 권장 / have=집에서 챙기기 ·  ess: 필수 여부
+// 신혼여행 기본 항목(시드/템플릿 + 최초 1회 마이그레이션 소스)
 const DATA = [
   { cat:"서류 · 금융", items:[
-    {id:"d1", name:"여권", type:"have", ess:true, note:"잔여 유효기간 6개월 이상 확인. ETIAS는 2026년 4분기 도입 예정이라 7월 여행엔 불필요 — 무비자 90일."},
-    {id:"d2", name:"여권 사본 + 여권용 사진 2매", type:"have", ess:true, note:"분실·재발급 대비. 사진·사본은 클라우드에도 백업."},
-    {id:"d3", name:"항공권·숙소·기차표·입장권 예약확인서", type:"have", ess:true, note:"콜로세움·바티칸·융프라우 등 사전예약 티켓 포함. 캡처해서 오프라인 저장."},
-    {id:"d4", name:"해외결제 카드 2장 (VISA/Master)", type:"have", ess:true, note:"한 장은 따로 분리 보관. 결제 시 현지통화(EUR/CHF) 선택해 DCC 수수료 피하기."},
-    {id:"d5", name:"비상금 현금 (유로 + 소액 스위스프랑)", type:"buy", ess:true, note:"⚠️ 스위스는 EUR이 아닌 CHF 별도 통화. 카드가 잘 되니 현금은 소액만."},
-    {id:"d6", name:"여행자보험 가입", type:"buy", ess:true, note:"의료비·휴대품 도난 보장 확인. 증권 캡처해 두기."},
+    {name:"여권", type:"have", ess:true, note:"잔여 유효기간 6개월 이상 확인. ETIAS는 2026년 4분기 도입 예정이라 7월 여행엔 불필요 — 무비자 90일."},
+    {name:"여권 사본 + 여권용 사진 2매", type:"have", ess:true, note:"분실·재발급 대비. 사진·사본은 클라우드에도 백업."},
+    {name:"항공권·숙소·기차표·입장권 예약확인서", type:"have", ess:true, note:"콜로세움·바티칸·융프라우 등 사전예약 티켓 포함. 캡처해서 오프라인 저장."},
+    {name:"해외결제 카드 2장 (VISA/Master)", type:"have", ess:true, note:"한 장은 따로 분리 보관. 결제 시 현지통화(EUR/CHF) 선택해 DCC 수수료 피하기."},
+    {name:"비상금 현금 (유로 + 소액 스위스프랑)", type:"buy", ess:true, note:"⚠️ 스위스는 EUR이 아닌 CHF 별도 통화. 카드가 잘 되니 현금은 소액만."},
+    {name:"여행자보험 가입", type:"buy", ess:true, note:"의료비·휴대품 도난 보장 확인. 증권 캡처해 두기."},
   ]},
   { cat:"통신 · 전자기기", items:[
-    {id:"e1", name:"유럽 eSIM / 유심 (3개국 커버)", type:"buy", ess:true, note:"프랑스·스위스·이탈리아 모두 포함되는 플랜으로. 출발 전 설치하고 현지 도착 후 활성화만."},
-    {id:"e2", name:"유니버설 멀티 어댑터", type:"buy", ess:true, note:"⚠️ 스위스 콘센트(Type J)는 프랑스·이탈리아(C/E)와 달라요. 둘 다 되는 멀티형 1개로 통일."},
-    {id:"e3", name:"고속 멀티 USB 충전기", type:"have", ess:true, note:"포트 여러 개짜리. 어댑터 1개에 꽂아 폰·카메라·보조배터리 동시 충전."},
-    {id:"e4", name:"보조배터리 (대용량)", type:"have", ess:true, note:"위탁수하물 금지 — 반드시 기내 휴대. 100Wh 이하만 반입 가능."},
-    {id:"e5", name:"충전 케이블 여분", type:"have", ess:false, note:"잘 끊기고 잃어버리기 쉬움. 1~2개 여유."},
-    {id:"e6", name:"미니 멀티탭", type:"buy", ess:false, note:"호텔 콘센트가 적을 때 유용. 어댑터 1개로 여러 기기 충전."},
+    {name:"유럽 eSIM / 유심 (3개국 커버)", type:"buy", ess:true, note:"프랑스·스위스·이탈리아 모두 포함되는 플랜으로. 출발 전 설치하고 현지 도착 후 활성화만."},
+    {name:"유니버설 멀티 어댑터", type:"buy", ess:true, note:"⚠️ 스위스 콘센트(Type J)는 프랑스·이탈리아(C/E)와 달라요. 둘 다 되는 멀티형 1개로 통일."},
+    {name:"고속 멀티 USB 충전기", type:"have", ess:true, note:"포트 여러 개짜리. 어댑터 1개에 꽂아 폰·카메라·보조배터리 동시 충전."},
+    {name:"보조배터리 (대용량)", type:"have", ess:true, note:"위탁수하물 금지 — 반드시 기내 휴대. 100Wh 이하만 반입 가능."},
+    {name:"충전 케이블 여분", type:"have", ess:false, note:"잘 끊기고 잃어버리기 쉬움. 1~2개 여유."},
+    {name:"미니 멀티탭", type:"buy", ess:false, note:"호텔 콘센트가 적을 때 유용. 어댑터 1개로 여러 기기 충전."},
   ]},
   { cat:"카메라 (Nikon Z50 II)", items:[
-    {id:"c1", name:"Z50 II 본체 + 16-50 / 50-250 렌즈", type:"have", ess:true, note:"바디캡·렌즈캡 챙기고, 비행 시 기내 휴대."},
-    {id:"c2", name:"카메라 배터리 여분 1~2개 (EN-EL25)", type:"buy", ess:true, note:"융프라우 등 고산지대 추위에 배터리가 훨씬 빨리 닳음. 여분 필수."},
-    {id:"c3", name:"메모리카드 여분", type:"buy", ess:true, note:"신혼여행이라 사진·영상 많음. 넉넉한 용량 + 1장 더."},
-    {id:"c4", name:"카메라 충전기 / USB-C 케이블", type:"have", ess:true, note:"Z50 II는 USB 충전도 가능 — 케이블 챙기면 편함."},
-    {id:"c5", name:"렌즈 클리닝 키트 (천·블로워)", type:"buy", ess:false, note:"알프스 먼지·물방울 대비."},
-    {id:"c6", name:"편한 카메라 스트랩", type:"have", ess:false, note:"하루종일 들면 목·어깨 부담. 넥/핸드 스트랩."},
-    {id:"c7", name:"24mm f/1.7 단렌즈", type:"buy", ess:false, note:"선택. 야경·실내·인물 스냅에 강함. 신혼 인생샷용."},
+    {name:"Z50 II 본체 + 16-50 / 50-250 렌즈", type:"have", ess:true, note:"바디캡·렌즈캡 챙기고, 비행 시 기내 휴대."},
+    {name:"카메라 배터리 여분 1~2개 (EN-EL25)", type:"buy", ess:true, note:"융프라우 등 고산지대 추위에 배터리가 훨씬 빨리 닳음. 여분 필수."},
+    {name:"메모리카드 여분", type:"buy", ess:true, note:"신혼여행이라 사진·영상 많음. 넉넉한 용량 + 1장 더."},
+    {name:"카메라 충전기 / USB-C 케이블", type:"have", ess:true, note:"Z50 II는 USB 충전도 가능 — 케이블 챙기면 편함."},
+    {name:"렌즈 클리닝 키트 (천·블로워)", type:"buy", ess:false, note:"알프스 먼지·물방울 대비."},
+    {name:"편한 카메라 스트랩", type:"have", ess:false, note:"하루종일 들면 목·어깨 부담. 넥/핸드 스트랩."},
+    {name:"24mm f/1.7 단렌즈", type:"buy", ess:false, note:"선택. 야경·실내·인물 스냅에 강함. 신혼 인생샷용."},
   ]},
   { cat:"의류 (더위 + 알프스 동시 대비)", items:[
-    {id:"w1", name:"반팔·얇은 셔츠 / 원피스", type:"have", ess:true, note:"파리·로마 한낮 30℃ 안팎. 통풍 잘 되는 옷."},
-    {id:"w2", name:"경량 패딩 또는 두꺼운 후드집업", type:"have", ess:true, note:"🏔️ 융프라우 정상은 한여름에도 영하. 가장 자주 빠뜨리는 필수템."},
-    {id:"w3", name:"바람막이 / 얇은 자켓", type:"have", ess:true, note:"알프스 날씨 변덕 심하고 소나기 잦음. 비·바람 대비."},
-    {id:"w4", name:"긴바지 1~2벌", type:"have", ess:true, note:"고산지대·성당 방문용."},
-    {id:"w5", name:"얇은 가디건 / 스카프", type:"have", ess:true, note:"성당·바티칸은 어깨·무릎 가리는 드레스코드. 스카프로 대체 가능."},
-    {id:"w6", name:"편한 워킹화 / 운동화", type:"have", ess:true, note:"하루 2만보 기본. 새 신발 말고 길든 신발로. 방수면 더 좋음."},
-    {id:"w7", name:"모자 + 선글라스", type:"have", ess:true, note:"고산지대 자외선·설원 눈부심 강함."},
-    {id:"w8", name:"얇은 장갑·목도리", type:"buy", ess:false, note:"추위 민감하면. 융프라우 정상 체감 매우 낮음."},
-    {id:"w9", name:"인생샷용 옷 1~2벌 (커플룩)", type:"have", ess:false, note:"호수·알프스·콜로세움 배경. 신혼 사진용."},
-    {id:"w10", name:"수영복", type:"have", ess:false, note:"호텔 수영장·스파 있을 때."},
+    {name:"반팔·얇은 셔츠 / 원피스", type:"have", ess:true, note:"파리·로마 한낮 30℃ 안팎. 통풍 잘 되는 옷."},
+    {name:"경량 패딩 또는 두꺼운 후드집업", type:"have", ess:true, note:"🏔️ 융프라우 정상은 한여름에도 영하. 가장 자주 빠뜨리는 필수템."},
+    {name:"바람막이 / 얇은 자켓", type:"have", ess:true, note:"알프스 날씨 변덕 심하고 소나기 잦음. 비·바람 대비."},
+    {name:"긴바지 1~2벌", type:"have", ess:true, note:"고산지대·성당 방문용."},
+    {name:"얇은 가디건 / 스카프", type:"have", ess:true, note:"성당·바티칸은 어깨·무릎 가리는 드레스코드. 스카프로 대체 가능."},
+    {name:"편한 워킹화 / 운동화", type:"have", ess:true, note:"하루 2만보 기본. 새 신발 말고 길든 신발로. 방수면 더 좋음."},
+    {name:"모자 + 선글라스", type:"have", ess:true, note:"고산지대 자외선·설원 눈부심 강함."},
+    {name:"얇은 장갑·목도리", type:"buy", ess:false, note:"추위 민감하면. 융프라우 정상 체감 매우 낮음."},
+    {name:"인생샷용 옷 1~2벌 (커플룩)", type:"have", ess:false, note:"호수·알프스·콜로세움 배경. 신혼 사진용."},
+    {name:"수영복", type:"have", ess:false, note:"호텔 수영장·스파 있을 때."},
   ]},
   { cat:"도난방지 · 보안", items:[
-    {id:"s1", name:"목걸이형 / 안주머니 지갑", type:"buy", ess:true, note:"여권·카드·폰은 항상 몸 안쪽에. 파리·로마 소매치기 다발."},
-    {id:"s2", name:"지퍼 잠금 크로스백 (또는 힙색)", type:"have", ess:true, note:"가방은 늘 몸 앞으로. 뒤로 메는 백팩·뒷주머니 금지. 허리에 메는 힙색이 꺼내기 쉽고 안전."},
-    {id:"s10", name:"휴대폰 넥/핸드 스트랩", type:"buy", ess:true, note:"파리·로마는 폰 낚아채기가 많음. 식당·카페 테이블 위에 폰 올려두지 않기. 신문지·서명 요청은 시선 돌리기 수법."},
-    {id:"s3", name:"RFID 차단 카드지갑", type:"buy", ess:false, note:"비접촉 카드 스키밍 예방."},
-    {id:"s6", name:"머니벨트 / 복대 (옷 안에 착용)", type:"buy", ess:false, note:"비상금·예비카드를 옷 안쪽에. 큰돈 이동·공항 이동 시 든든."},
-    {id:"s7", name:"더미 지갑 (소액·만료카드용)", type:"buy", ess:false, note:"강도 상황 대비. 소액 현금과 못 쓰는 카드만 넣어 따로 분리 휴대."},
-    {id:"s4", name:"가방 자물쇠 · 와이어 도난방지 끈", type:"buy", ess:false, note:"열차 선반·식당 의자에 가방 고정. 야간열차·기차이동 시 유용."},
-    {id:"s8", name:"분실 추적 태그 (에어태그/스마트태그)", type:"buy", ess:false, note:"캐리어·가방에 넣어 분실·도난 시 위치 추적. 위탁수하물 분실 대비에도."},
-    {id:"s5", name:"현금·카드 분산 보관", type:"have", ess:true, note:"한 곳에 몰지 않기. 비상카드·비상금은 캐리어·복대 등에 따로."},
+    {name:"목걸이형 / 안주머니 지갑", type:"buy", ess:true, note:"여권·카드·폰은 항상 몸 안쪽에. 파리·로마 소매치기 다발."},
+    {name:"지퍼 잠금 크로스백 (또는 힙색)", type:"have", ess:true, note:"가방은 늘 몸 앞으로. 뒤로 메는 백팩·뒷주머니 금지."},
+    {name:"휴대폰 넥/핸드 스트랩", type:"buy", ess:true, note:"파리·로마는 폰 낚아채기가 많음. 테이블 위에 폰 올려두지 않기."},
+    {name:"RFID 차단 카드지갑", type:"buy", ess:false, note:"비접촉 카드 스키밍 예방."},
+    {name:"머니벨트 / 복대 (옷 안에 착용)", type:"buy", ess:false, note:"비상금·예비카드를 옷 안쪽에."},
+    {name:"더미 지갑 (소액·만료카드용)", type:"buy", ess:false, note:"강도 상황 대비. 소액 현금과 못 쓰는 카드만."},
+    {name:"가방 자물쇠 · 와이어 도난방지 끈", type:"buy", ess:false, note:"열차 선반·식당 의자에 가방 고정."},
+    {name:"분실 추적 태그 (에어태그/스마트태그)", type:"buy", ess:false, note:"캐리어·가방에 넣어 분실·도난 시 위치 추적."},
+    {name:"현금·카드 분산 보관", type:"have", ess:true, note:"한 곳에 몰지 않기. 비상카드·비상금은 따로."},
   ]},
   { cat:"숙소 안전 (체크인 시)", items:[
-    {id:"h1", name:"휴대용 도어락 / 도어 스토퍼", type:"buy", ess:true, note:"숙소 문을 안에서 한 번 더 잠금. 오토락 오작동·마스터키 침입 대비. 에어비앤비·소형 호텔일수록 권장."},
-    {id:"h2", name:"문틈 도어 알람 (선택)", type:"buy", ess:false, note:"문이 열리면 큰 소리. 가볍고 작아 부담 없음. 1층·단독 숙소면 더 유용."},
-    {id:"h3", name:"몰카 탐지 앱 설치 (출발 전)", type:"have", ess:true, note:"휴대폰 카메라로 렌즈 반사·적외선 LED 확인. 체크인 직후 화재경보기·통풍구·전등·콘센트·탁상시계·연기감지기 위주로 점검."},
-    {id:"h4", name:"휴대용 몰카 탐지기 (선택)", type:"buy", ess:false, note:"불 끄고 비추면 렌즈가 빨갛게 반사돼 보임. 앱보다 정확. 예민하면 추천."},
-    {id:"h5", name:"객실 금고 / 세이프박스 활용", type:"have", ess:false, note:"여권·예비카드·현금 보관. 작동 확인 후 사용하고, 체크아웃 때 비우는 것 잊지 않기."},
-    {id:"h6", name:"비상구·문·창문 잠금 확인", type:"have", ess:false, note:"체크인 직후 비상구 위치 파악 + 창문·발코니문 잠금 상태 점검. 와이파이 연결 기기 목록에 수상한 카메라 없는지도 한 번 확인."},
+    {name:"휴대용 도어락 / 도어 스토퍼", type:"buy", ess:true, note:"문을 안에서 한 번 더 잠금. 에어비앤비·소형 호텔일수록 권장."},
+    {name:"문틈 도어 알람 (선택)", type:"buy", ess:false, note:"문이 열리면 큰 소리. 가볍고 작아 부담 없음."},
+    {name:"몰카 탐지 앱 설치 (출발 전)", type:"have", ess:true, note:"체크인 직후 화재경보기·통풍구·전등·콘센트·연기감지기 점검."},
+    {name:"휴대용 몰카 탐지기 (선택)", type:"buy", ess:false, note:"불 끄고 비추면 렌즈가 빨갛게 반사. 예민하면 추천."},
+    {name:"객실 금고 활용", type:"have", ess:false, note:"여권·예비카드·현금 보관. 체크아웃 때 비우기."},
+    {name:"비상구·문·창문 잠금 확인", type:"have", ess:false, note:"체크인 직후 비상구 위치 + 창문·발코니문 잠금 점검."},
   ]},
   { cat:"위생 · 의약품", items:[
-    {id:"m1", name:"개인 처방약 (+ 영문 처방전)", type:"have", ess:true, note:"여행기간보다 넉넉하게. 기내 휴대."},
-    {id:"m2", name:"상비약 (소화·지사·진통·감기)", type:"buy", ess:true, note:"현지에서 약 구하기 번거롭고 비쌈."},
-    {id:"m3", name:"자외선차단제 + 립밤", type:"buy", ess:true, note:"고지대 자외선 강함. 매일 덧바르기."},
-    {id:"m4", name:"멀미약", type:"buy", ess:false, note:"산악열차·굽잇길 버스 대비."},
-    {id:"m5", name:"세면도구 (액체류 100ml 이하)", type:"have", ess:true, note:"기내 반입은 100ml 이하 + 투명 지퍼백."},
-    {id:"m6", name:"휴대용 휴지 · 물티슈", type:"buy", ess:true, note:"유럽 화장실에 휴지 없는 곳 많고 공중화장실 유료."},
-    {id:"m7", name:"필터 샤워기", type:"buy", ess:false, note:"유럽 석회수로 두피·피부 트러블 잦음. 예민하면 추천."},
+    {name:"개인 처방약 (+ 영문 처방전)", type:"have", ess:true, note:"여행기간보다 넉넉하게. 기내 휴대."},
+    {name:"상비약 (소화·지사·진통·감기)", type:"buy", ess:true, note:"현지에서 약 구하기 번거롭고 비쌈."},
+    {name:"자외선차단제 + 립밤", type:"buy", ess:true, note:"고지대 자외선 강함. 매일 덧바르기."},
+    {name:"멀미약", type:"buy", ess:false, note:"산악열차·굽잇길 버스 대비."},
+    {name:"세면도구 (액체류 100ml 이하)", type:"have", ess:true, note:"기내 반입은 100ml 이하 + 투명 지퍼백."},
+    {name:"휴대용 휴지 · 물티슈", type:"buy", ess:true, note:"유럽 화장실에 휴지 없는 곳 많고 공중화장실 유료."},
+    {name:"필터 샤워기", type:"buy", ess:false, note:"유럽 석회수로 두피·피부 트러블 잦음. 예민하면 추천."},
   ]},
   { cat:"편의용품", items:[
-    {id:"u1", name:"텀블러 / 물병 (500ml, 누수X)", type:"buy", ess:true, note:"로마·파리 식수대 많음. 물값·생수 절약 + 컨디션 관리."},
-    {id:"u2", name:"휴대용 우산 또는 우비", type:"have", ess:true, note:"알프스 소나기 잦음."},
-    {id:"u3", name:"목베개·안대·귀마개", type:"have", ess:false, note:"장거리 비행·야간열차용."},
-    {id:"u4", name:"옷 압축팩 / 정리 파우치", type:"buy", ess:false, note:"캐리어 공간 절약·분류. 2주 짐 정리에 유용."},
-    {id:"u5", name:"빨래망 + 여행용 세제", type:"buy", ess:false, note:"2주면 중간에 한 번 빨래."},
-    {id:"u6", name:"지퍼백·에코백 몇 장", type:"have", ess:false, note:"젖은 옷·신발·장보기·기내 정리용."},
+    {name:"텀블러 / 물병 (500ml, 누수X)", type:"buy", ess:true, note:"로마·파리 식수대 많음. 물값 절약."},
+    {name:"휴대용 우산 또는 우비", type:"have", ess:true, note:"알프스 소나기 잦음."},
+    {name:"목베개·안대·귀마개", type:"have", ess:false, note:"장거리 비행·야간열차용."},
+    {name:"옷 압축팩 / 정리 파우치", type:"buy", ess:false, note:"캐리어 공간 절약·분류."},
+    {name:"빨래망 + 여행용 세제", type:"buy", ess:false, note:"2주면 중간에 한 번 빨래."},
+    {name:"지퍼백·에코백 몇 장", type:"have", ess:false, note:"젖은 옷·신발·장보기·기내 정리용."},
   ]},
 ];
 
-const CAT_LIST = DATA.map(d=>d.cat);
-let state = { checked:{}, custom:[], deleted:[], edits:{}, collapsed:{}, costs:{}, filter:"all" };
-let spendOpen = false;
+const APP = { lists:[], currentId:null };
+let idbOK = false, _db = null, spendOpen = false;
+const APP_KEY = "checklist_app_v2";
 
-// ---------- storage (localStorage: 폰·브라우저에 그대로 저장) ----------
-function load(){
-  try{
-    const raw = localStorage.getItem(STORE_KEY);
-    if(raw){ const v = JSON.parse(raw); state = {checked:v.checked||{}, custom:v.custom||[], deleted:v.deleted||[], edits:v.edits||{}, collapsed:v.collapsed||{}, costs:v.costs||{}, filter:v.filter||"all"}; }
-  }catch(e){ /* 첫 실행 */ }
-}
-function save(){
-  try{ localStorage.setItem(STORE_KEY, JSON.stringify(state)); flashSaved(); }
-  catch(e){ console.error("save failed", e); }
-}
+// ---------- utils ----------
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+function won(n){ return "₩"+Math.round(+n||0).toLocaleString("ko-KR"); }
+function withWarn(s){ let t=esc(s); if(t.includes("⚠️")) t=t.replace(/(⚠️[^.]*\.)/,'<span class="warn">$1</span>'); return t; }
+function uid(){ return "i"+Date.now().toString(36)+Math.floor(Math.random()*1e4).toString(36); }
+function val(id){ return document.getElementById(id).value; }
+function L(){ return APP.lists.find(l=>l.id===APP.currentId) || APP.lists[0] || null; }
 function flashSaved(){ const s=document.getElementById("saving"); s.classList.add("show"); setTimeout(()=>s.classList.remove("show"),900); }
 
-// ---------- model helpers ----------
-function allItems(){
-  const del = new Set(state.deleted);
-  const base = DATA.flatMap(d=>d.items.map(it=>({...it, cat:d.cat}))).filter(it=>!del.has(it.id));
-  return base.concat(state.custom).map(it=>{
-    const ov = state.edits[it.id];
-    return ov ? {...it, ...ov} : it;   // 이름·메모 사용자 수정 반영
-  });
+// ---------- IndexedDB ----------
+function openDB(){ return new Promise((res,rej)=>{ const r=indexedDB.open("checklist_db",1);
+  r.onupgradeneeded=e=>{ const db=e.target.result;
+    if(!db.objectStoreNames.contains("lists")) db.createObjectStore("lists",{keyPath:"id"});
+    if(!db.objectStoreNames.contains("meta"))  db.createObjectStore("meta",{keyPath:"k"});
+  };
+  r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }); }
+function idbAll(){ return new Promise((res,rej)=>{ const q=_db.transaction("lists","readonly").objectStore("lists").getAll(); q.onsuccess=()=>res(q.result||[]); q.onerror=()=>rej(q.error); }); }
+function idbMeta(k){ return new Promise((res)=>{ const q=_db.transaction("meta","readonly").objectStore("meta").get(k); q.onsuccess=()=>res(q.result?q.result.v:null); q.onerror=()=>res(null); }); }
+function idbPut(l){ return new Promise((res,rej)=>{ const q=_db.transaction("lists","readwrite").objectStore("lists").put(l); q.onsuccess=()=>res(); q.onerror=()=>rej(q.error); }); }
+function idbDel(id){ return new Promise((res,rej)=>{ const q=_db.transaction("lists","readwrite").objectStore("lists").delete(id); q.onsuccess=()=>res(); q.onerror=()=>rej(q.error); }); }
+function idbSetMeta(k,v){ return new Promise((res,rej)=>{ const q=_db.transaction("meta","readwrite").objectStore("meta").put({k,v}); q.onsuccess=()=>res(); q.onerror=()=>rej(q.error); }); }
+function idbClear(){ return new Promise((res,rej)=>{ const q=_db.transaction("lists","readwrite").objectStore("lists").clear(); q.onsuccess=()=>res(); q.onerror=()=>rej(q.error); }); }
+
+function fallbackSaveAll(){ try{ localStorage.setItem(APP_KEY, JSON.stringify(APP)); }catch(e){} }
+// 현재 리스트 + 현재 선택 저장
+function saveCur(){ flashSaved(); const l=L(); if(!l) return;
+  if(idbOK){ idbPut(l).catch(fallbackSaveAll); idbSetMeta("currentId",APP.currentId).catch(()=>{}); }
+  else fallbackSaveAll();
 }
-function itemsByCat(){
-  const map={}; CAT_LIST.forEach(c=>map[c]=[]);
-  allItems().forEach(it=>{ if(!map[it.cat]) map[it.cat]=[]; map[it.cat].push(it); });
-  return map;
+function persistList(l){ if(idbOK) idbPut(l).catch(fallbackSaveAll); else fallbackSaveAll(); }
+function persistMeta(){ if(idbOK) idbSetMeta("currentId",APP.currentId).catch(()=>{}); else fallbackSaveAll(); }
+
+// ---------- 리스트 생성/마이그레이션 ----------
+function newList(name,emoji,options,kind){
+  let items=[], catOrder=[];
+  if(kind==="travel"){
+    catOrder=DATA.map(d=>d.cat);
+    DATA.forEach(d=>d.items.forEach(it=>items.push({id:uid(),cat:d.cat,name:it.name,type:it.type,ess:it.ess,note:it.note,cost:0,checked:false,order:items.length})));
+  } else if(kind==="shopping"){
+    catOrder=["식료품","생활용품","기타"];
+    [["식료품","우유","buy"],["식료품","계란","buy"],["식료품","빵","buy"],["생활용품","휴지","buy"],["생활용품","세제","buy"]]
+      .forEach(([c,n,t])=>items.push({id:uid(),cat:c,name:n,type:t,ess:false,note:"",cost:0,checked:false,order:items.length}));
+  } else { catOrder=["할 일"]; }
+  return { id:uid(), name:name||"새 리스트", emoji:emoji||"📋", createdAt:Date.now(), order:APP.lists.length,
+           options:options||{dday:null,spending:false}, catOrder, collapsed:{}, filter:"all", items };
 }
-function passFilter(it){
-  const done=!!state.checked[it.id];
-  switch(state.filter){
+
+// 최초 실행: 기존 localStorage(eutrip_checklist_v1) 데이터를 그대로 이전 (체크·금액·수정 보존)
+// 구 기본항목 id를 DATA 순서대로 매핑 (개수·순서 동일)
+const OLD_IDS=["d1","d2","d3","d4","d5","d6",
+  "e1","e2","e3","e4","e5","e6",
+  "c1","c2","c3","c4","c5","c6","c7",
+  "w1","w2","w3","w4","w5","w6","w7","w8","w9","w10",
+  "s1","s2","s10","s3","s6","s7","s4","s8","s5",
+  "h1","h2","h3","h4","h5","h6",
+  "m1","m2","m3","m4","m5","m6","m7",
+  "u1","u2","u3","u4","u5","u6"];
+function buildHoneymoonList(){
+  let old=null; try{ const raw=localStorage.getItem("eutrip_checklist_v1"); if(raw) old=JSON.parse(raw); }catch(e){}
+  const deleted=new Set((old&&old.deleted)||[]);
+  const edits=(old&&old.edits)||{}, costs=(old&&old.costs)||{}, checked=(old&&old.checked)||{};
+  const items=[]; let order=0, k=0; const catOrder=DATA.map(d=>d.cat);
+  DATA.forEach(d=>d.items.forEach(it=>{
+    const oid=OLD_IDS[k++]; const ov=(old&&edits[oid])||{};
+    if(old && deleted.has(oid)) return;             // 옛 앱에서 삭제했던 기본항목은 제외
+    const cat=ov.cat||d.cat; if(!catOrder.includes(cat)) catOrder.push(cat);
+    items.push({id:uid(), cat, name:ov.name||it.name, type:ov.type||it.type,
+      ess: ov.ess!==undefined?ov.ess:it.ess, note: ov.note!==undefined?ov.note:it.note,
+      cost:+costs[oid]||0, checked:!!checked[oid], order:order++});
+  }));
+  // 사용자가 추가했던 항목 이전
+  if(old&&Array.isArray(old.custom)){
+    old.custom.forEach(c=>{ const ov=edits[c.id]||{};
+      const cat=ov.cat||c.cat||"편의용품"; if(!catOrder.includes(cat)) catOrder.push(cat);
+      items.push({id:uid(), cat, name:ov.name||c.name, type:ov.type||c.type||"buy",
+        ess: ov.ess!==undefined?ov.ess:!!c.ess, note: ov.note!==undefined?ov.note:(c.note||""),
+        cost:+costs[c.id]||0, checked:!!checked[c.id], order:order++});
+    });
+  }
+  return { id:"hm_"+uid(), name:"유럽 신혼여행 준비", emoji:"✈️", createdAt:Date.now(), order:0,
+    options:{ dday:{start:"2026-06-21", end:"2026-07-04"}, spending:true },
+    catOrder, collapsed:(old&&old.collapsed)||{}, filter:(old&&old.filter)||"all", items };
+}
+
+// ---------- 모델 ----------
+function passFilter(it,filter){
+  switch(filter){
     case "buy": return it.type==="buy";
     case "have": return it.type==="have";
     case "ess": return !!it.ess;
-    case "left": return !done;
+    case "left": return !it.checked;
     default: return true;
   }
 }
+function catsInOrder(list){
+  const seen=new Set(list.catOrder); const extra=[];
+  list.items.forEach(it=>{ if(!seen.has(it.cat)){ seen.add(it.cat); extra.push(it.cat); } });
+  return list.catOrder.concat(extra);
+}
 
-// ---------- render ----------
+// ---------- 렌더 ----------
 const CHECK_SVG='<svg viewBox="0 0 24 24"><polyline points="4 12 10 18 20 6"/></svg>';
 function render(){
-  const map=itemsByCat();
-  const list=document.getElementById("list");
-  list.innerHTML="";
-  let shown=0;
-  CAT_LIST.concat(Object.keys(map).filter(c=>!CAT_LIST.includes(c))).forEach((cat,i)=>{
-    const items=(map[cat]||[]).filter(passFilter);
+  const list=L(); if(!list) return;
+  document.getElementById("listTitle").textContent = `${list.emoji||"📋"} ${list.name}`;
+  document.getElementById("spendCard").hidden = !list.options.spending;
+  setDday();
+  refreshAddCats();
+
+  const byCat={}; list.items.forEach(it=>{ (byCat[it.cat]=byCat[it.cat]||[]).push(it); });
+  const listEl=document.getElementById("list"); listEl.innerHTML=""; let shown=0;
+  catsInOrder(list).forEach((cat,i)=>{
+    const all=(byCat[cat]||[]);
+    const items=all.filter(it=>passFilter(it,list.filter));
     if(items.length===0) return;
     shown+=items.length;
-    const doneN=items.filter(it=>state.checked[it.id]).length;
-    const collapsed=!!state.collapsed[cat];
+    const doneN=items.filter(it=>it.checked).length;
+    const collapsed=!!list.collapsed[cat];
     const sec=document.createElement("div"); sec.className="section"+(collapsed?" collapsed":"");
     sec.innerHTML=`<div class="sec-head" data-cat="${esc(cat)}">
         <span class="sec-num">${String(i+1).padStart(2,"0")}</span>
@@ -429,185 +536,102 @@ function render(){
     if(!collapsed){
       const ul=document.createElement("ul");
       items.forEach(it=>{
-        const done=!!state.checked[it.id];
         const li=document.createElement("li");
-        li.className="item"+(done?" checked":"");
-        li.dataset.id=it.id;
-        const tag = it.type==="buy"
-          ? '<span class="tag buy">🛒 살 것</span>'
-          : '<span class="tag have">🎒 챙길 것</span>';
+        li.className="item"+(it.checked?" checked":""); li.dataset.id=it.id;
+        const tag = it.type==="buy" ? '<span class="tag buy">🛒 살 것</span>' : '<span class="tag have">🎒 챙길 것</span>';
         const star = it.ess ? '<span class="star" title="필수">⭐</span>' : '';
-        const cost = +state.costs[it.id]||0;
-        const price = cost>0 ? `<span class="price" title="금액 수정">${won(cost)}</span>` : '';
+        const price = (+it.cost>0) ? `<span class="price" title="금액 수정">${won(it.cost)}</span>` : '';
         const note = it.note ? `<div class="note">${withWarn(it.note)}</div>` : '';
         const actions = `<div class="item-actions">`
           + `<button class="del edit" title="수정" data-edit="${it.id}" aria-label="수정">✎</button>`
-          + `<button class="del" title="삭제" data-del="${it.id}" aria-label="삭제">×</button>`
-          + `</div>`;
+          + `<button class="del" title="삭제" data-del="${it.id}" aria-label="삭제">×</button></div>`;
         li.innerHTML=`<span class="box">${CHECK_SVG}</span>
-          <div class="body">
-            <div class="line1"><span class="name">${esc(it.name)}</span>${tag}${star}${price}</div>
-            ${note}
-          </div>${actions}`;
+          <div class="body"><div class="line1"><span class="name">${esc(it.name)}</span>${tag}${star}${price}</div>${note}</div>${actions}`;
         ul.appendChild(li);
       });
       sec.appendChild(ul);
     }
-    list.appendChild(sec);
+    listEl.appendChild(sec);
   });
-  if(shown===0){ list.innerHTML='<div class="empty">조건에 맞는 항목이 없어요. 필터를 바꿔보세요.</div>'; }
-  updateProgress();
-  updateRestoreBtn();
-  updateSpend();
-  document.querySelectorAll(".chip").forEach(c=>c.classList.toggle("on", c.dataset.f===state.filter));
+  if(shown===0){ listEl.innerHTML='<div class="empty">항목이 없어요. 위에서 추가하거나 필터를 바꿔보세요.</div>'; }
+  updateProgress(); updateSpend();
+  document.querySelectorAll(".chip").forEach(c=>c.classList.toggle("on", c.dataset.f===list.filter));
 }
 
 function updateProgress(){
-  const items=allItems();
-  const total=items.length;
-  const done=items.filter(it=>state.checked[it.id]).length;
+  const items=L().items, total=items.length, done=items.filter(it=>it.checked).length;
   const pct= total? Math.round(done/total*100):0;
   document.getElementById("pct").textContent=pct+"%";
   document.getElementById("barfill").style.width=pct+"%";
   document.getElementById("m-total").textContent=total;
   document.getElementById("m-done").textContent=done;
-  document.getElementById("m-buy").textContent=items.filter(it=>it.type==="buy"&&!state.checked[it.id]).length;
-  document.getElementById("m-have").textContent=items.filter(it=>it.type==="have"&&!state.checked[it.id]).length;
-  const lbl=document.getElementById("plabel");
-  lbl.textContent = pct===100 ? "준비 완료! 즐거운 여행 되세요 ✈️" : (pct===0? "하나씩 체크해 보세요" : `잘하고 있어요 — ${total-done}개 남음`);
+  document.getElementById("m-buy").textContent=items.filter(it=>it.type==="buy"&&!it.checked).length;
+  document.getElementById("m-have").textContent=items.filter(it=>it.type==="have"&&!it.checked).length;
+  document.getElementById("plabel").textContent = total===0 ? "항목을 추가해 보세요"
+    : (pct===100 ? "전부 완료! 🎉" : (done===0? "하나씩 체크해 보세요" : `잘하고 있어요 — ${total-done}개 남음`));
 }
 
-// ---------- utils ----------
-function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
-function won(n){ return "₩"+Math.round(+n||0).toLocaleString("ko-KR"); }
-function withWarn(s){ // keep ⚠️/🏔️ lines emphasized
-  let t=esc(s);
-  if(t.includes("⚠️")) t=t.replace(/(⚠️[^.]*\.)/,'<span class="warn">$1</span>');
-  return t;
-}
-
-// ---------- events ----------
-document.getElementById("list").addEventListener("click",e=>{
-  // 카테고리 접기/펼치기
-  const head=e.target.closest(".sec-head");
-  if(head){ const cat=head.dataset.cat; state.collapsed[cat]=!state.collapsed[cat]; save(); render(); return; }
-  // 편집 폼 내부 클릭(저장/취소/입력) — 체크 토글 막음
-  if(e.target.closest(".edit-form")){
-    if(e.target.closest("[data-savedit]")) saveEdit(e.target.closest("[data-savedit]").dataset.savedit);
-    else if(e.target.closest("[data-canceledit]")) render();
-    return;
-  }
-  // 수정 버튼
-  const ed=e.target.closest("[data-edit]");
-  if(ed){ openEdit(ed.dataset.edit); return; }
-  // 금액 칩 클릭 → 수정 열기
-  const pr=e.target.closest(".price");
-  if(pr){ const row=pr.closest("li.item"); if(row) openEdit(row.dataset.id); return; }
-  // 삭제 버튼
-  const del=e.target.closest("[data-del]");
-  if(del){
-    const id=del.dataset.del;
-    const isCustom=state.custom.some(c=>c.id===id);
-    const it=allItems().find(x=>x.id===id);
-    const nm=it?it.name:"이 항목";
-    if(!confirm(`'${nm}'을(를) 삭제할까요?`+(isCustom?"":"\n(기본 항목은 '삭제 복원'으로 되살릴 수 있어요)"))) return;
-    if(isCustom){ state.custom=state.custom.filter(c=>c.id!==id); }
-    else if(!state.deleted.includes(id)){ state.deleted.push(id); }
-    delete state.checked[id]; delete state.edits[id]; delete state.costs[id]; save(); render(); return;
-  }
-  const li=e.target.closest("li.item"); if(!li||li.classList.contains("editing")) return;
-  const id=li.dataset.id;
-  if(state.checked[id]) delete state.checked[id]; else state.checked[id]=true;
-  // update just this li for snappiness, then progress
-  li.classList.toggle("checked", !!state.checked[id]);
-  // re-render if a filter would hide/show it
-  if(state.filter==="left"){ render(); } else { updateProgress(); refreshCounts(); }
-  save();
-});
-function refreshCounts(){ render(); } // simplest: counts in headers need recompute
-
-document.getElementById("filters").addEventListener("click",e=>{
-  const b=e.target.closest(".chip"); if(!b) return;
-  state.filter=b.dataset.f; save(); render();
-});
-
-document.getElementById("addBtn").addEventListener("click",addItem);
-document.getElementById("newName").addEventListener("keydown",e=>{ if(e.key==="Enter") addItem(); });
-function addItem(){
-  const name=document.getElementById("newName").value.trim();
-  if(!name) return;
-  const cat=document.getElementById("newCat").value;
-  const type=document.getElementById("newType").value;
-  const costEl=document.getElementById("newCost");
-  const cost=Math.max(0, Math.round(+costEl.value||0));
-  const id="x"+Date.now().toString(36)+Math.floor(Math.random()*1000);
-  state.custom.push({id,name,cat,type,custom:true,ess:false,note:""});
-  if(cost>0) state.costs[id]=cost;
-  document.getElementById("newName").value="";
-  costEl.value="";
-  save(); render();
-}
-
-document.getElementById("resetBtn").addEventListener("click",()=>{
-  if(confirm("체크를 전부 해제할까요? (추가한 항목은 그대로 유지됩니다)")){
-    state.checked={}; save(); render();
-  }
-});
-
-document.getElementById("restoreDelBtn").addEventListener("click",()=>{
-  const n=state.deleted.length;
-  if(n && confirm(`삭제한 기본 항목 ${n}개를 모두 되살릴까요?`)){
-    state.deleted=[]; save(); render();
-  }
-});
-function updateRestoreBtn(){
-  const b=document.getElementById("restoreDelBtn");
-  if(!b) return;
-  const n=state.deleted.length;
-  b.hidden = n===0;
-  b.textContent = `삭제 복원 (${n})`;
-}
-
-// ---------- 준비 지출 통계 ----------
 function updateSpend(){
-  const items=allItems();
-  let spent=0, planned=0;            // 사용(체크됨) / 예정(미체크)
-  const byCat={};                    // 카테고리별 합계
-  items.forEach(it=>{
-    const c=+state.costs[it.id]||0;
-    if(c<=0) return;
-    const done=!!state.checked[it.id];
-    if(done) spent+=c; else planned+=c;
-    byCat[it.cat]=(byCat[it.cat]||0)+c;
-  });
-  const total=spent+planned;
+  const items=L().items; let spent=0, planned=0; const byCat={};
+  items.forEach(it=>{ const c=+it.cost||0; if(c<=0) return; if(it.checked) spent+=c; else planned+=c; byCat[it.cat]=(byCat[it.cat]||0)+c; });
   document.getElementById("spendSpent").textContent=won(spent);
   document.getElementById("spendPlanned").textContent=won(planned);
-  document.getElementById("spendTotal").textContent=won(total);
-
+  document.getElementById("spendTotal").textContent=won(spent+planned);
   const cats=Object.entries(byCat).sort((a,b)=>b[1]-a[1]);
-  const toggle=document.getElementById("spendToggle");
-  const breakEl=document.getElementById("spendBreak");
+  const toggle=document.getElementById("spendToggle"), breakEl=document.getElementById("spendBreak");
   toggle.hidden = cats.length===0;
-  if(cats.length===0){ breakEl.hidden=true; breakEl.innerHTML=""; spendOpen=false; }
-  toggle.textContent = (spendOpen?"카테고리별 내역 ▴":"카테고리별 내역 ▾");
-  breakEl.hidden = !spendOpen || cats.length===0;
-  if(spendOpen && cats.length){
+  if(cats.length===0){ spendOpen=false; breakEl.hidden=true; breakEl.innerHTML=""; return; }
+  toggle.textContent = spendOpen?"카테고리별 내역 ▴":"카테고리별 내역 ▾";
+  breakEl.hidden = !spendOpen;
+  if(spendOpen){
     const max=cats[0][1]||1;
-    breakEl.innerHTML = cats.map(([cat,amt])=>{
-      const pct=Math.round(amt/max*100);
-      return `<div class="spend-row"><span class="scat">${esc(cat)}</span>`
-           + `<span class="samt">${won(amt)}</span>`
-           + `<span class="spend-bar"><i style="width:${pct}%"></i></span></div>`;
-    }).join("");
+    breakEl.innerHTML=cats.map(([cat,amt])=>`<div class="spend-row"><span class="scat">${esc(cat)}</span><span class="samt">${won(amt)}</span><span class="spend-bar"><i style="width:${Math.round(amt/max*100)}%"></i></span></div>`).join("");
   }
 }
 
-// ---------- 항목 인라인 수정 ----------
+function setDday(){
+  const el=document.getElementById("dday"); const dd=L().options.dday;
+  if(!dd||!dd.start){ el.hidden=true; return; }
+  el.hidden=false;
+  const ms=864e5, p=s=>{const[y,m,d]=s.split("-").map(Number);return new Date(y,m-1,d);};
+  const start=p(dd.start), end=dd.end?p(dd.end):start;
+  const n=new Date(); const today=new Date(n.getFullYear(),n.getMonth(),n.getDate());
+  const dStart=Math.round((start-today)/ms), dEnd=Math.round((end-today)/ms);
+  let txt,s;
+  if(dStart>0){ txt=`📅 D-${dStart}`; s="soon"; }
+  else if(dStart===0){ txt="🎉 D-DAY · 오늘이에요!"; s="go"; }
+  else if(dEnd>=0){ txt=`▶ 진행 중 · ${-dStart+1}일차`; s="go"; }
+  else { txt="✅ 종료 · 수고했어요"; s="done"; }
+  el.textContent=txt; el.dataset.s=s;
+}
+
+// ---------- 항목 추가/수정/삭제 ----------
+function refreshAddCats(){
+  const sel=document.getElementById("newCat"); const list=L(); if(!list) return;
+  const cur=sel.value;
+  sel.innerHTML="";
+  catsInOrder(list).forEach(c=>{ const o=document.createElement("option"); o.value=c; o.textContent=c; sel.appendChild(o); });
+  const o=document.createElement("option"); o.value="__new"; o.textContent="＋ 새 분류…"; sel.appendChild(o);
+  if(cur && [...sel.options].some(op=>op.value===cur)) sel.value=cur;
+}
+function addItem(){
+  const list=L(); if(!list) return;
+  const name=val("newName").trim(); if(!name) return;
+  let cat=val("newCat");
+  if(cat==="__new"){ const c=(prompt("새 분류 이름을 입력하세요")||"").trim(); if(!c) return; cat=c; if(!list.catOrder.includes(cat)) list.catOrder.push(cat); }
+  const type=val("newType");
+  const cost=Math.max(0,Math.round(+val("newCost")||0));
+  list.items.push({id:uid(),cat,name,type,ess:false,note:"",cost,checked:false,order:Date.now()});
+  document.getElementById("newName").value=""; document.getElementById("newCost").value="";
+  saveCur(); render();
+}
+
 function openEdit(id){
-  const it=allItems().find(x=>x.id===id); if(!it) return;
+  const list=L(); const it=list.items.find(x=>x.id===id); if(!it) return;
   const li=document.querySelector(`li.item[data-id="${id}"]`); if(!li) return;
-  const catOpts=CAT_LIST.map(c=>`<option value="${esc(c)}"${c===it.cat?" selected":""}>${esc(c)}</option>`).join("");
+  const cats=catsInOrder(list); if(!cats.includes(it.cat)) cats.push(it.cat);
+  const catOpts=cats.map(c=>`<option value="${esc(c)}"${c===it.cat?" selected":""}>${esc(c)}</option>`).join("")
+    + `<option value="__new">＋ 새 분류…</option>`;
   li.classList.add("editing");
   li.innerHTML=`<div class="edit-form">
       <div class="ef-label">항목 이름</div>
@@ -615,111 +639,187 @@ function openEdit(id){
       <div class="ef-label">메모</div>
       <textarea class="edit-note" rows="3" maxlength="400" placeholder="메모 (선택)">${esc(it.note||"")}</textarea>
       <div class="edit-opts">
-        <label class="field"><span>분류</span>
-          <select class="edit-cat">${catOpts}</select>
-        </label>
-        <label class="field"><span>유형</span>
-          <select class="edit-type">
-            <option value="buy"${it.type==="buy"?" selected":""}>🛒 살 것</option>
-            <option value="have"${it.type==="have"?" selected":""}>🎒 챙길 것</option>
-          </select>
-        </label>
+        <label class="field"><span>분류</span><select class="edit-cat">${catOpts}</select></label>
+        <label class="field"><span>유형</span><select class="edit-type">
+          <option value="buy"${it.type==="buy"?" selected":""}>🛒 살 것</option>
+          <option value="have"${it.type==="have"?" selected":""}>🎒 챙길 것</option>
+        </select></label>
         <label class="field"><span>금액(원)</span>
-          <input class="edit-cost" type="number" min="0" step="100" inputmode="numeric" value="${(+state.costs[id]||0)>0?(+state.costs[id]):""}" placeholder="구매 금액">
-        </label>
-        <label class="edit-ess-wrap${it.ess?" on":""}">
-          <input class="edit-ess" type="checkbox"${it.ess?" checked":""}> ⭐ 필수
-        </label>
+          <input class="edit-cost" type="number" min="0" step="100" inputmode="numeric" value="${(+it.cost>0)?(+it.cost):""}" placeholder="금액"></label>
+        <label class="edit-ess-wrap${it.ess?" on":""}"><input class="edit-ess" type="checkbox"${it.ess?" checked":""}> ⭐ 필수</label>
       </div>
       <div class="edit-actions">
         <button class="reset" data-canceledit="1">취소</button>
         <button class="addbtn" data-savedit="${id}">저장</button>
-      </div>
-    </div>`;
-  const nm=li.querySelector(".edit-name");
-  nm.focus(); nm.setSelectionRange(nm.value.length, nm.value.length);
-  // ⭐ 필수 토글 시각 피드백
+      </div></div>`;
+  const nm=li.querySelector(".edit-name"); nm.focus(); nm.setSelectionRange(nm.value.length,nm.value.length);
   const essBox=li.querySelector(".edit-ess");
-  essBox.addEventListener("change",()=>li.querySelector(".edit-ess-wrap").classList.toggle("on", essBox.checked));
+  essBox.addEventListener("change",()=>li.querySelector(".edit-ess-wrap").classList.toggle("on",essBox.checked));
 }
 function saveEdit(id){
+  const list=L(); const it=list.items.find(x=>x.id===id); if(!it) return;
   const li=document.querySelector(`li.item[data-id="${id}"]`); if(!li) return;
-  const name=li.querySelector(".edit-name").value.trim();
-  if(!name){ alert("이름을 입력해 주세요."); return; }
-  const note=li.querySelector(".edit-note").value.trim();
-  const type=li.querySelector(".edit-type").value;
-  const cat=li.querySelector(".edit-cat").value;
-  const ess=li.querySelector(".edit-ess").checked;
-  const cost=Math.max(0, Math.round(+li.querySelector(".edit-cost").value||0));
-  state.edits[id]={name, note, type, cat, ess};
-  if(cost>0) state.costs[id]=cost; else delete state.costs[id];
-  save(); render();
+  const name=li.querySelector(".edit-name").value.trim(); if(!name){ alert("이름을 입력해 주세요."); return; }
+  let cat=li.querySelector(".edit-cat").value;
+  if(cat==="__new"){ const c=(prompt("새 분류 이름")||"").trim(); if(!c) return; cat=c; if(!list.catOrder.includes(cat)) list.catOrder.push(cat); }
+  it.name=name;
+  it.note=li.querySelector(".edit-note").value.trim();
+  it.type=li.querySelector(".edit-type").value;
+  it.cat=cat;
+  it.ess=li.querySelector(".edit-ess").checked;
+  it.cost=Math.max(0,Math.round(+li.querySelector(".edit-cost").value||0));
+  saveCur(); render();
 }
 
-// ---------- 전체 접기/펼치기 ----------
-document.getElementById("toggleAll").addEventListener("click",()=>{
-  const cats=Object.keys(itemsByCat());
-  const anyOpen=cats.some(c=>!state.collapsed[c]);
-  cats.forEach(c=>{ state.collapsed[c]=anyOpen; });  // 하나라도 열려 있으면 전부 접기
-  save(); render();
+// ---------- 리스트 전환/모달 ----------
+function buildListSelect(){
+  const sel=document.getElementById("listSelect"); sel.innerHTML="";
+  APP.lists.forEach(l=>{ const o=document.createElement("option"); o.value=l.id; o.textContent=`${l.emoji||"📋"} ${l.name}`; if(l.id===APP.currentId) o.selected=true; sel.appendChild(o); });
+}
+let modalMode="new";
+function showModal(on){ document.getElementById("modal").hidden=!on; }
+function openNewList(){
+  modalMode="new";
+  document.getElementById("modalTitle").textContent="새 리스트 만들기";
+  document.getElementById("mName").value="";
+  document.getElementById("mEmoji").value="📋";
+  document.getElementById("mTemplateWrap").hidden=false;
+  document.getElementById("mTemplate").value="blank";
+  document.getElementById("mSpending").checked=false;
+  document.getElementById("mDday").checked=false;
+  document.getElementById("mDdayRow").hidden=true;
+  document.getElementById("mStart").value=""; document.getElementById("mEnd").value="";
+  document.getElementById("mDelete").hidden=true;
+  showModal(true); setTimeout(()=>document.getElementById("mName").focus(),50);
+}
+function openManageList(){
+  const l=L(); modalMode="edit";
+  document.getElementById("modalTitle").textContent="리스트 설정";
+  document.getElementById("mName").value=l.name;
+  document.getElementById("mEmoji").value=l.emoji||"📋";
+  document.getElementById("mTemplateWrap").hidden=true;
+  document.getElementById("mSpending").checked=!!l.options.spending;
+  const hasD=!!(l.options.dday&&l.options.dday.start);
+  document.getElementById("mDday").checked=hasD;
+  document.getElementById("mDdayRow").hidden=!hasD;
+  document.getElementById("mStart").value=hasD?l.options.dday.start:"";
+  document.getElementById("mEnd").value=hasD&&l.options.dday.end?l.options.dday.end:"";
+  document.getElementById("mDelete").hidden = APP.lists.length<=1;
+  showModal(true);
+}
+function modalSave(){
+  const name=document.getElementById("mName").value.trim(); if(!name){ alert("리스트 이름을 입력해 주세요."); return; }
+  const emoji=document.getElementById("mEmoji").value.trim()||"📋";
+  const spending=document.getElementById("mSpending").checked;
+  const useD=document.getElementById("mDday").checked;
+  const start=document.getElementById("mStart").value, end=document.getElementById("mEnd").value;
+  const dday = (useD&&start)? {start, end:end||""} : null;
+  const options={ dday, spending };
+  if(modalMode==="new"){
+    const kind=document.getElementById("mTemplate").value;
+    const l=newList(name,emoji,options,kind);
+    APP.lists.push(l); APP.currentId=l.id;
+    persistList(l); persistMeta();
+  } else {
+    const l=L(); l.name=name; l.emoji=emoji; l.options=options; persistList(l); persistMeta();
+  }
+  showModal(false); buildListSelect(); render();
+}
+function modalDelete(){
+  if(APP.lists.length<=1){ alert("마지막 리스트는 삭제할 수 없어요."); return; }
+  const l=L(); if(!confirm(`'${l.name}' 리스트를 삭제할까요? 되돌릴 수 없습니다.`)) return;
+  APP.lists=APP.lists.filter(x=>x.id!==l.id);
+  if(idbOK) idbDel(l.id).catch(()=>{});
+  APP.currentId=APP.lists[0].id; persistMeta(); if(!idbOK) fallbackSaveAll();
+  showModal(false); buildListSelect(); render();
+}
+
+// ---------- 이벤트 ----------
+document.getElementById("list").addEventListener("click",e=>{
+  if(!L()) return;
+  const head=e.target.closest(".sec-head");
+  if(head){ const cat=head.dataset.cat; const c=L().collapsed; c[cat]=!c[cat]; saveCur(); render(); return; }
+  if(e.target.closest(".edit-form")){
+    const sv=e.target.closest("[data-savedit]");
+    if(sv) saveEdit(sv.dataset.savedit);
+    else if(e.target.closest("[data-canceledit]")) render();
+    return;
+  }
+  const ed=e.target.closest("[data-edit]"); if(ed){ openEdit(ed.dataset.edit); return; }
+  const pr=e.target.closest(".price"); if(pr){ const row=pr.closest("li.item"); if(row) openEdit(row.dataset.id); return; }
+  const del=e.target.closest("[data-del]");
+  if(del){ const id=del.dataset.del; const it=L().items.find(x=>x.id===id);
+    if(!confirm(`'${it?it.name:"이 항목"}'을(를) 삭제할까요?`)) return;
+    L().items=L().items.filter(x=>x.id!==id); saveCur(); render(); return; }
+  const li=e.target.closest("li.item"); if(!li||li.classList.contains("editing")) return;
+  const it=L().items.find(x=>x.id===li.dataset.id); if(!it) return;
+  it.checked=!it.checked; saveCur(); render();
 });
 
+document.getElementById("filters").addEventListener("click",e=>{
+  const b=e.target.closest(".chip"); if(!b||!L()) return;
+  L().filter=b.dataset.f; saveCur(); render();
+});
+document.getElementById("toggleAll").addEventListener("click",()=>{
+  if(!L()) return; const cats=catsInOrder(L()); const anyOpen=cats.some(c=>!L().collapsed[c]);
+  cats.forEach(c=>{ L().collapsed[c]=anyOpen; }); saveCur(); render();
+});
 document.getElementById("spendToggle").addEventListener("click",()=>{ spendOpen=!spendOpen; updateSpend(); });
+document.getElementById("addBtn").addEventListener("click",addItem);
+document.getElementById("newName").addEventListener("keydown",e=>{ if(e.key==="Enter") addItem(); });
+document.getElementById("newCost").addEventListener("keydown",e=>{ if(e.key==="Enter") addItem(); });
+document.getElementById("resetBtn").addEventListener("click",()=>{
+  if(!L()) return; if(confirm("이 리스트의 체크를 전부 해제할까요?")){ L().items.forEach(it=>it.checked=false); saveCur(); render(); }
+});
 
-// ---------- D-day ----------
-function setDday(){
-  const el=document.getElementById("dday"); if(!el) return;
-  const ms=864e5;
-  const start=new Date(2026,5,21), end=new Date(2026,6,4);  // 6/21 ~ 7/4
-  const n=new Date(); const today=new Date(n.getFullYear(),n.getMonth(),n.getDate());
-  const dStart=Math.round((start-today)/ms), dEnd=Math.round((end-today)/ms);
-  let txt,s;
-  if(dStart>0){ txt=`✈️ 파리 출발 D-${dStart}`; s="soon"; }
-  else if(dStart===0){ txt="🎉 오늘 출발! 즐거운 신혼여행 되세요"; s="go"; }
-  else if(dEnd>=0){ txt=`🧳 여행 중 · ${-dStart+1}일차 / 14일`; s="go"; }
-  else { txt="🏠 여행 종료 · 수고 많으셨어요"; s="done"; }
-  el.textContent=txt; el.dataset.s=s;
-}
+// 리스트 전환/모달
+document.getElementById("listSelect").addEventListener("change",e=>{ APP.currentId=e.target.value; persistMeta(); spendOpen=false; render(); });
+document.getElementById("newListBtn").addEventListener("click",openNewList);
+document.getElementById("manageListBtn").addEventListener("click",openManageList);
+document.getElementById("mCancel").addEventListener("click",()=>showModal(false));
+document.getElementById("mSave").addEventListener("click",modalSave);
+document.getElementById("mDelete").addEventListener("click",modalDelete);
+document.getElementById("mDday").addEventListener("change",e=>{ document.getElementById("mDdayRow").hidden=!e.target.checked; });
+document.getElementById("modal").addEventListener("click",e=>{ if(e.target.id==="modal") showModal(false); });
 
-// ---------- backup / restore ----------
+// 백업/복원 (전체 리스트)
 document.getElementById("exportBtn").addEventListener("click",()=>{
-  const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});
-  const a=document.createElement("a");
-  a.href=URL.createObjectURL(blob);
-  a.download="europe-checklist-backup.json";
-  a.click();
-  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+  const blob=new Blob([JSON.stringify({version:2,lists:APP.lists,currentId:APP.currentId},null,2)],{type:"application/json"});
+  const a=document.createElement("a"); a.href=URL.createObjectURL(blob);
+  a.download="checklist-backup.json"; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1000);
 });
 document.getElementById("importBtn").addEventListener("click",()=>document.getElementById("importFile").click());
 document.getElementById("importFile").addEventListener("change",e=>{
-  const f=e.target.files[0]; if(!f) return;
-  const r=new FileReader();
-  r.onload=()=>{
+  const f=e.target.files[0]; if(!f) return; const r=new FileReader();
+  r.onload=async ()=>{
     try{
       const v=JSON.parse(r.result);
-      state={checked:v.checked||{}, custom:v.custom||[], deleted:v.deleted||[], edits:v.edits||{}, collapsed:v.collapsed||{}, costs:v.costs||{}, filter:v.filter||"all"};
-      save(); render(); alert("복원 완료!");
-    }catch(err){ alert("파일을 읽을 수 없어요. 백업 JSON 파일이 맞는지 확인해 주세요."); }
+      const lists = Array.isArray(v.lists) ? v.lists : (Array.isArray(v)? v : null);
+      if(!lists||!lists.length) throw 0;
+      if(!confirm("백업을 불러오면 현재 모든 리스트가 백업 내용으로 교체됩니다. 진행할까요?")){ e.target.value=""; return; }
+      APP.lists=lists; APP.currentId=(v.currentId&&lists.some(l=>l.id===v.currentId))?v.currentId:lists[0].id;
+      if(idbOK){ await idbClear(); for(const l of APP.lists){ try{await idbPut(l);}catch(_){} } await idbSetMeta("currentId",APP.currentId); }
+      else fallbackSaveAll();
+      buildListSelect(); render(); alert("복원 완료!");
+    }catch(err){ alert("파일을 읽을 수 없어요. 이 앱에서 내보낸 백업 JSON인지 확인해 주세요."); }
     e.target.value="";
   };
   r.readAsText(f);
 });
 
+function registerSW(){ if("serviceWorker" in navigator){ window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{})); } }
+
 // ---------- init ----------
-function initCatSelect(){
-  const sel=document.getElementById("newCat");
-  CAT_LIST.forEach(c=>{ const o=document.createElement("option"); o.value=c; o.textContent=c; sel.appendChild(o); });
-}
-function registerSW(){
-  if("serviceWorker" in navigator){
-    window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
-  }
-}
-(function(){
-  initCatSelect();
-  load();
-  setDday();
-  render();
-  registerSW();
+(async function init(){
+  try{ _db=await openDB(); idbOK=true; }catch(e){ idbOK=false; }
+  let lists=[], curId=null;
+  if(idbOK){ try{ lists=await idbAll(); curId=await idbMeta("currentId"); }catch(e){ idbOK=false; } }
+  if(!idbOK){ try{ const raw=localStorage.getItem(APP_KEY); if(raw){ const a=JSON.parse(raw); lists=a.lists||[]; curId=a.currentId; } }catch(e){} }
+  if(!lists.length){ const hm=buildHoneymoonList(); lists=[hm]; curId=hm.id; }
+  APP.lists=lists.sort((a,b)=>(a.order||0)-(b.order||0));
+  APP.currentId=(curId&&APP.lists.some(l=>l.id===curId))?curId:APP.lists[0].id;
+  if(idbOK){ for(const l of APP.lists){ try{await idbPut(l);}catch(e){} } try{await idbSetMeta("currentId",APP.currentId);}catch(e){} }
+  else fallbackSaveAll();
+  buildListSelect(); render(); registerSW();
 })();
 </script>
