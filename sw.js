@@ -1,5 +1,5 @@
 // 유럽 체크리스트 — 오프라인 캐시용 서비스 워커
-const CACHE = "eutrip-v7";
+const CACHE = "eutrip-v8";
 const CORE = [
   "./",
   "./index.html",
