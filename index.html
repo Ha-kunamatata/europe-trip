@@ -178,6 +178,30 @@
   .edit-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:2px}
   .edit-actions .addbtn{padding:8px 18px}
   .edit-actions .reset{padding:8px 14px}
+  .edit-cost{border:1px solid var(--line);border-radius:8px;padding:8px 9px;font-family:inherit;font-size:13px;color:var(--ink);background:#fff;width:120px}
+  .edit-cost:focus{outline:2px solid var(--glacier-soft);border-color:var(--glacier)}
+
+  /* ---------- price chip / spending ---------- */
+  .price{font-size:11px;font-weight:800;padding:2px 7px;border-radius:6px;white-space:nowrap;
+    background:#EAF3EE;color:#27795c;cursor:pointer;font-variant-numeric:tabular-nums}
+  .price:hover{background:#d7ebe0}
+  li.item.checked .price{background:#dcebe3}
+  .add input[type=number]{width:120px;border:1px solid var(--line);border-radius:9px;padding:9px 11px;font-family:inherit;font-size:14px;color:var(--ink)}
+
+  .spend-card{margin-top:18px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px 18px;box-shadow:var(--shadow)}
+  .spend-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+  .spend-eyebrow{font-size:12px;font-weight:700;color:var(--done);letter-spacing:.02em;margin-bottom:4px}
+  .spend-total{font-family:"Fraunces",serif;font-size:27px;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums;line-height:1.1}
+  .spend-sub{display:flex;flex-direction:column;gap:3px;font-size:12.5px;color:var(--ink-soft);text-align:right;padding-top:2px}
+  .spend-sub b{color:var(--ink);font-variant-numeric:tabular-nums;font-weight:700}
+  .spend-toggle-wrap{margin-top:10px}
+  .spend-break{margin-top:12px;display:flex;flex-direction:column;gap:9px;border-top:1px dashed var(--line);padding-top:12px}
+  .spend-row{display:grid;grid-template-columns:1fr auto;gap:5px 10px;align-items:center;font-size:12.5px}
+  .spend-row .scat{color:var(--ink);font-weight:600}
+  .spend-row .samt{color:var(--ink-soft);font-variant-numeric:tabular-nums;font-weight:700}
+  .spend-bar{grid-column:1/3;height:6px;border-radius:99px;background:#EFEADF;overflow:hidden}
+  .spend-bar > i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--done),#7fb0c4)}
+  .spend-empty{font-size:12.5px;color:var(--ink-soft);margin-top:6px}
 
   @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
@@ -214,8 +238,24 @@
         <option value="buy">🛒 살 것</option>
         <option value="have">🎒 챙길 것</option>
       </select>
+      <input type="number" id="newCost" placeholder="금액(원)" min="0" step="100" inputmode="numeric">
       <button class="addbtn" id="addBtn">추가</button>
     </div>
+  </div>
+
+  <div class="spend-card" id="spendCard">
+    <div class="spend-top">
+      <div>
+        <div class="spend-eyebrow">💰 준비 지출 — 사용 금액</div>
+        <div class="spend-total" id="spendSpent">₩0</div>
+      </div>
+      <div class="spend-sub">
+        <div>구매 예정 <b id="spendPlanned">₩0</b></div>
+        <div>전체 합계 <b id="spendTotal">₩0</b></div>
+      </div>
+    </div>
+    <div class="spend-toggle-wrap"><button class="linkbtn" id="spendToggle" hidden>카테고리별 내역 ▾</button></div>
+    <div class="spend-break" id="spendBreak" hidden></div>
   </div>
 
   <div class="filters" id="filters">
@@ -324,13 +364,14 @@ const DATA = [
 ];
 
 const CAT_LIST = DATA.map(d=>d.cat);
-let state = { checked:{}, custom:[], deleted:[], edits:{}, collapsed:{}, filter:"all" };
+let state = { checked:{}, custom:[], deleted:[], edits:{}, collapsed:{}, costs:{}, filter:"all" };
+let spendOpen = false;
 
 // ---------- storage (localStorage: 폰·브라우저에 그대로 저장) ----------
 function load(){
   try{
     const raw = localStorage.getItem(STORE_KEY);
-    if(raw){ const v = JSON.parse(raw); state = {checked:v.checked||{}, custom:v.custom||[], deleted:v.deleted||[], edits:v.edits||{}, collapsed:v.collapsed||{}, filter:v.filter||"all"}; }
+    if(raw){ const v = JSON.parse(raw); state = {checked:v.checked||{}, custom:v.custom||[], deleted:v.deleted||[], edits:v.edits||{}, collapsed:v.collapsed||{}, costs:v.costs||{}, filter:v.filter||"all"}; }
   }catch(e){ /* 첫 실행 */ }
 }
 function save(){
@@ -396,6 +437,8 @@ function render(){
           ? '<span class="tag buy">🛒 살 것</span>'
           : '<span class="tag have">🎒 챙길 것</span>';
         const star = it.ess ? '<span class="star" title="필수">⭐</span>' : '';
+        const cost = +state.costs[it.id]||0;
+        const price = cost>0 ? `<span class="price" title="금액 수정">${won(cost)}</span>` : '';
         const note = it.note ? `<div class="note">${withWarn(it.note)}</div>` : '';
         const actions = `<div class="item-actions">`
           + `<button class="del edit" title="수정" data-edit="${it.id}" aria-label="수정">✎</button>`
@@ -403,7 +446,7 @@ function render(){
           + `</div>`;
         li.innerHTML=`<span class="box">${CHECK_SVG}</span>
           <div class="body">
-            <div class="line1"><span class="name">${esc(it.name)}</span>${tag}${star}</div>
+            <div class="line1"><span class="name">${esc(it.name)}</span>${tag}${star}${price}</div>
             ${note}
           </div>${actions}`;
         ul.appendChild(li);
@@ -415,6 +458,7 @@ function render(){
   if(shown===0){ list.innerHTML='<div class="empty">조건에 맞는 항목이 없어요. 필터를 바꿔보세요.</div>'; }
   updateProgress();
   updateRestoreBtn();
+  updateSpend();
   document.querySelectorAll(".chip").forEach(c=>c.classList.toggle("on", c.dataset.f===state.filter));
 }
 
@@ -435,6 +479,7 @@ function updateProgress(){
 
 // ---------- utils ----------
 function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+function won(n){ return "₩"+Math.round(+n||0).toLocaleString("ko-KR"); }
 function withWarn(s){ // keep ⚠️/🏔️ lines emphasized
   let t=esc(s);
   if(t.includes("⚠️")) t=t.replace(/(⚠️[^.]*\.)/,'<span class="warn">$1</span>');
@@ -455,6 +500,9 @@ document.getElementById("list").addEventListener("click",e=>{
   // 수정 버튼
   const ed=e.target.closest("[data-edit]");
   if(ed){ openEdit(ed.dataset.edit); return; }
+  // 금액 칩 클릭 → 수정 열기
+  const pr=e.target.closest(".price");
+  if(pr){ const row=pr.closest("li.item"); if(row) openEdit(row.dataset.id); return; }
   // 삭제 버튼
   const del=e.target.closest("[data-del]");
   if(del){
@@ -465,7 +513,7 @@ document.getElementById("list").addEventListener("click",e=>{
     if(!confirm(`'${nm}'을(를) 삭제할까요?`+(isCustom?"":"\n(기본 항목은 '삭제 복원'으로 되살릴 수 있어요)"))) return;
     if(isCustom){ state.custom=state.custom.filter(c=>c.id!==id); }
     else if(!state.deleted.includes(id)){ state.deleted.push(id); }
-    delete state.checked[id]; delete state.edits[id]; save(); render(); return;
+    delete state.checked[id]; delete state.edits[id]; delete state.costs[id]; save(); render(); return;
   }
   const li=e.target.closest("li.item"); if(!li||li.classList.contains("editing")) return;
   const id=li.dataset.id;
@@ -490,9 +538,13 @@ function addItem(){
   if(!name) return;
   const cat=document.getElementById("newCat").value;
   const type=document.getElementById("newType").value;
+  const costEl=document.getElementById("newCost");
+  const cost=Math.max(0, Math.round(+costEl.value||0));
   const id="x"+Date.now().toString(36)+Math.floor(Math.random()*1000);
   state.custom.push({id,name,cat,type,custom:true,ess:false,note:""});
+  if(cost>0) state.costs[id]=cost;
   document.getElementById("newName").value="";
+  costEl.value="";
   save(); render();
 }
 
@@ -516,6 +568,41 @@ function updateRestoreBtn(){
   b.textContent = `삭제 복원 (${n})`;
 }
 
+// ---------- 준비 지출 통계 ----------
+function updateSpend(){
+  const items=allItems();
+  let spent=0, planned=0;            // 사용(체크됨) / 예정(미체크)
+  const byCat={};                    // 카테고리별 합계
+  items.forEach(it=>{
+    const c=+state.costs[it.id]||0;
+    if(c<=0) return;
+    const done=!!state.checked[it.id];
+    if(done) spent+=c; else planned+=c;
+    byCat[it.cat]=(byCat[it.cat]||0)+c;
+  });
+  const total=spent+planned;
+  document.getElementById("spendSpent").textContent=won(spent);
+  document.getElementById("spendPlanned").textContent=won(planned);
+  document.getElementById("spendTotal").textContent=won(total);
+
+  const cats=Object.entries(byCat).sort((a,b)=>b[1]-a[1]);
+  const toggle=document.getElementById("spendToggle");
+  const breakEl=document.getElementById("spendBreak");
+  toggle.hidden = cats.length===0;
+  if(cats.length===0){ breakEl.hidden=true; breakEl.innerHTML=""; spendOpen=false; }
+  toggle.textContent = (spendOpen?"카테고리별 내역 ▴":"카테고리별 내역 ▾");
+  breakEl.hidden = !spendOpen || cats.length===0;
+  if(spendOpen && cats.length){
+    const max=cats[0][1]||1;
+    breakEl.innerHTML = cats.map(([cat,amt])=>{
+      const pct=Math.round(amt/max*100);
+      return `<div class="spend-row"><span class="scat">${esc(cat)}</span>`
+           + `<span class="samt">${won(amt)}</span>`
+           + `<span class="spend-bar"><i style="width:${pct}%"></i></span></div>`;
+    }).join("");
+  }
+}
+
 // ---------- 항목 인라인 수정 ----------
 function openEdit(id){
   const it=allItems().find(x=>x.id===id); if(!it) return;
@@ -536,6 +623,9 @@ function openEdit(id){
             <option value="buy"${it.type==="buy"?" selected":""}>🛒 살 것</option>
             <option value="have"${it.type==="have"?" selected":""}>🎒 챙길 것</option>
           </select>
+        </label>
+        <label class="field"><span>금액(원)</span>
+          <input class="edit-cost" type="number" min="0" step="100" inputmode="numeric" value="${(+state.costs[id]||0)>0?(+state.costs[id]):""}" placeholder="구매 금액">
         </label>
         <label class="edit-ess-wrap${it.ess?" on":""}">
           <input class="edit-ess" type="checkbox"${it.ess?" checked":""}> ⭐ 필수
@@ -560,7 +650,9 @@ function saveEdit(id){
   const type=li.querySelector(".edit-type").value;
   const cat=li.querySelector(".edit-cat").value;
   const ess=li.querySelector(".edit-ess").checked;
+  const cost=Math.max(0, Math.round(+li.querySelector(".edit-cost").value||0));
   state.edits[id]={name, note, type, cat, ess};
+  if(cost>0) state.costs[id]=cost; else delete state.costs[id];
   save(); render();
 }
 
@@ -571,6 +663,8 @@ document.getElementById("toggleAll").addEventListener("click",()=>{
   cats.forEach(c=>{ state.collapsed[c]=anyOpen; });  // 하나라도 열려 있으면 전부 접기
   save(); render();
 });
+
+document.getElementById("spendToggle").addEventListener("click",()=>{ spendOpen=!spendOpen; updateSpend(); });
 
 // ---------- D-day ----------
 function setDday(){
@@ -603,7 +697,7 @@ document.getElementById("importFile").addEventListener("change",e=>{
   r.onload=()=>{
     try{
       const v=JSON.parse(r.result);
-      state={checked:v.checked||{}, custom:v.custom||[], deleted:v.deleted||[], edits:v.edits||{}, collapsed:v.collapsed||{}, filter:v.filter||"all"};
+      state={checked:v.checked||{}, custom:v.custom||[], deleted:v.deleted||[], edits:v.edits||{}, collapsed:v.collapsed||{}, costs:v.costs||{}, filter:v.filter||"all"};
       save(); render(); alert("복원 완료!");
     }catch(err){ alert("파일을 읽을 수 없어요. 백업 JSON 파일이 맞는지 확인해 주세요."); }
     e.target.value="";
